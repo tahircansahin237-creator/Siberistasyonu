@@ -1,0 +1,2003 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>WHITE WEB — Etik Hackerların Merkezi</title>
+<!--
+╔══════════════════════════════════════════════════════════════════╗
+║  W H I T E   W E B                                               ║
+║  Etik Hackerların Merkezi · Bilginin Açık Denizi                 ║
+║                                                                  ║
+║  Dark Web'ten, Anonymous'tan 1.000.000.000.000x daha etik.       ║
+║  Çünkü güç sorumlulukla gelir.                                   ║
+║                                                                  ║
+║  Araçlar: OSINT, Hash, Encode, Subnet, Port Ref, Regex, Crypto   ║
+║  Alanlar: 20+ bilgi dalı, konu anlatımlı, sıfırdan öğret         ║
+║  Forum, Notlar, Dosya, Gizlilik, Tema — hepsi tek dosyada        ║
+╚══════════════════════════════════════════════════════════════════╝
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,700;1,400&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════
+   TEMA DEĞİŞKENLERİ
+   ═══════════════════════════════════════════ */
+:root{
+  --bg:#030508;
+  --bg2:#080d14;
+  --bg3:#0d1520;
+  --bg4:#111d2b;
+  --border:#1a2d42;
+  --border2:#253d57;
+  --g1:#00ff88;   /* Ana yeşil — etik hacker rengi */
+  --g2:#00d4ff;   /* Siyan */
+  --g3:#ff6b35;   /* Turuncu — uyarı */
+  --g4:#a855f7;   /* Mor — araçlar */
+  --g5:#f59e0b;   /* Altın — bilim */
+  --text:#d4e8f0;
+  --text2:#7a9bb5;
+  --text3:#3a5570;
+  --card:#0a1520;
+  --shadow:rgba(0,255,136,0.06);
+  --font-head:'Orbitron',monospace;
+  --font-body:'JetBrains Mono',monospace;
+  --r:10px;
+  --tr:0.2s cubic-bezier(.4,0,.2,1);
+}
+[data-theme="light"]{
+  --bg:#eef4f8;
+  --bg2:#e2ecf4;
+  --bg3:#d5e4f0;
+  --bg4:#c8dcea;
+  --border:#a8c4d8;
+  --border2:#7aaac4;
+  --g1:#007a40;
+  --g2:#006890;
+  --g3:#c44a15;
+  --g4:#7c2ec4;
+  --g5:#b07800;
+  --text:#0d1e2a;
+  --text2:#2a4a60;
+  --text3:#6a8aa0;
+  --card:#f4f9fc;
+  --shadow:rgba(0,100,60,0.08);
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:var(--font-body);font-size:13px;line-height:1.7;
+  min-height:100vh;overflow-x:hidden;
+  transition:background var(--tr),color var(--tr);
+  cursor:crosshair;
+}
+::selection{background:var(--g1);color:#000}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--g2)}
+
+/* ═══════════════════════════════════════════
+   MATRIX RAIN CANVAS (Arka plan)
+   ═══════════════════════════════════════════ */
+#matrix-canvas{
+  position:fixed;inset:0;z-index:0;
+  opacity:0.04;pointer-events:none;
+}
+[data-theme="light"] #matrix-canvas{opacity:0.02}
+
+/* Scan line efekti */
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,0.015) 2px,rgba(0,255,136,0.015) 4px);
+  animation:scan 8s linear infinite;
+}
+@keyframes scan{0%{background-position:0 0}100%{background-position:0 100vh}}
+
+/* ═══════════════════════════════════════════
+   LAYOUT
+   ═══════════════════════════════════════════ */
+#app{
+  position:relative;z-index:1;
+  display:grid;
+  grid-template-columns:260px 1fr;
+  grid-template-rows:auto 1fr;
+  min-height:100vh;
+  grid-template-areas:"header header" "sidebar main";
+}
+@media(max-width:900px){
+  #app{grid-template-columns:1fr;grid-template-areas:"header" "main"}
+  #sidebar{display:none}
+}
+
+/* ═══════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════ */
+#header{
+  grid-area:header;
+  display:flex;align-items:center;gap:16px;
+  padding:14px 24px;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:100;
+  flex-wrap:wrap;
+}
+.logo-wrap{display:flex;flex-direction:column;gap:0;user-select:none}
+.logo-main{
+  font-family:var(--font-head);font-size:20px;font-weight:900;
+  letter-spacing:4px;
+  background:linear-gradient(90deg,var(--g1),var(--g2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-shadow:none;
+  position:relative;
+}
+.logo-main::after{
+  content:'';position:absolute;bottom:-2px;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,var(--g1),transparent);
+}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:3px;text-transform:uppercase;margin-top:2px}
+.logo-badge{
+  display:inline-block;padding:2px 8px;
+  background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);
+  border-radius:3px;font-size:9px;color:var(--g1);letter-spacing:1px;
+  margin-top:4px;width:fit-content;
+}
+.hdr-spacer{flex:1}
+.hdr-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+/* ═══════════════════════════════════════════
+   BUTONLAR
+   ═══════════════════════════════════════════ */
+.btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 13px;border:1px solid var(--border2);
+  background:var(--bg3);color:var(--text2);
+  font-family:var(--font-body);font-size:11px;
+  border-radius:6px;cursor:pointer;
+  transition:all var(--tr);white-space:nowrap;user-select:none;
+  letter-spacing:0.5px;
+}
+.btn:hover{border-color:var(--g1);color:var(--g1);box-shadow:0 0 10px var(--shadow);transform:translateY(-1px)}
+.btn:active{transform:scale(0.97)}
+.btn-g{background:linear-gradient(135deg,var(--g1),var(--g2));border:none;color:#000;font-weight:700}
+.btn-g:hover{opacity:0.85;color:#000}
+.btn-tool{border-color:var(--g4);color:var(--g4)}
+.btn-tool:hover{background:rgba(168,85,247,0.1);box-shadow:0 0 10px rgba(168,85,247,0.15)}
+.btn-warn{border-color:var(--g3);color:var(--g3)}
+.btn-warn:hover{background:rgba(255,107,53,0.1)}
+.btn-sm{padding:4px 9px;font-size:10px}
+
+/* ═══════════════════════════════════════════
+   SIDEBAR — Gezinti menüsü
+   ═══════════════════════════════════════════ */
+#sidebar{
+  grid-area:sidebar;
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  padding:16px 0;
+  overflow-y:auto;
+  position:sticky;top:57px;
+  height:calc(100vh - 57px);
+}
+.sb-section-title{
+  padding:10px 18px 6px;
+  font-size:9px;color:var(--text3);letter-spacing:3px;text-transform:uppercase;
+}
+.sb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 18px;cursor:pointer;
+  transition:all var(--tr);border-left:2px solid transparent;
+  font-size:12px;color:var(--text2);
+  user-select:none;
+}
+.sb-item:hover{background:var(--bg3);color:var(--text);border-left-color:var(--border2)}
+.sb-item.active{
+  background:var(--bg3);color:var(--g1);
+  border-left-color:var(--g1);
+}
+.sb-item .icon{font-size:14px;width:18px;text-align:center}
+.sb-badge{
+  margin-left:auto;padding:1px 6px;border-radius:10px;
+  font-size:9px;background:rgba(0,255,136,0.1);
+  color:var(--g1);border:1px solid rgba(0,255,136,0.2);
+}
+.sb-divider{margin:8px 18px;border:none;border-top:1px solid var(--border)}
+
+/* ═══════════════════════════════════════════
+   ANA İÇERİK ALANI
+   ═══════════════════════════════════════════ */
+#main{
+  grid-area:main;padding:24px;
+  overflow-y:auto;min-height:calc(100vh - 57px);
+}
+.panel{display:none;animation:fadeUp 0.25s ease}
+.panel.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.panel-hdr{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:24px;padding-bottom:16px;
+  border-bottom:1px solid var(--border);flex-wrap:wrap;
+}
+.panel-hdr h1{
+  font-family:var(--font-head);font-size:16px;font-weight:700;
+  letter-spacing:2px;
+  background:linear-gradient(135deg,var(--g1),var(--g2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.panel-hdr p{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* ═══════════════════════════════════════════
+   KARTLAR
+   ═══════════════════════════════════════════ */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:18px;margin-bottom:14px;
+  transition:border-color var(--tr);
+}
+.card:hover{border-color:var(--border2)}
+.card-title{
+  font-family:var(--font-head);font-size:12px;font-weight:700;
+  letter-spacing:1px;color:var(--g2);
+  display:flex;align-items:center;gap:8px;margin-bottom:14px;
+}
+.card-title::before{content:'//';color:var(--text3);font-weight:300}
+
+/* ═══════════════════════════════════════════
+   INPUT ELEMANLARI
+   ═══════════════════════════════════════════ */
+.inp{
+  width:100%;padding:10px 13px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:7px;color:var(--text);
+  font-family:var(--font-body);font-size:12px;
+  outline:none;transition:border-color var(--tr);
+  margin-bottom:10px;
+}
+.inp:focus{border-color:var(--g1);box-shadow:0 0 0 2px rgba(0,255,136,0.08)}
+.inp::placeholder{color:var(--text3)}
+textarea.inp{min-height:100px;resize:vertical}
+select.inp{cursor:pointer}
+
+/* ═══════════════════════════════════════════
+   TERMINAL OUTPUT — Araç sonuçları
+   ═══════════════════════════════════════════ */
+.terminal{
+  background:#010408;border:1px solid var(--border2);
+  border-radius:7px;padding:14px;
+  font-size:12px;color:var(--g1);
+  min-height:60px;max-height:300px;overflow-y:auto;
+  white-space:pre-wrap;word-break:break-all;
+  font-family:var(--font-body);line-height:1.8;
+  display:none;margin-top:10px;
+  box-shadow:inset 0 0 20px rgba(0,0,0,0.5);
+}
+.terminal.visible{display:block}
+.terminal .t-ok{color:var(--g1)}
+.terminal .t-info{color:var(--g2)}
+.terminal .t-warn{color:var(--g5)}
+.terminal .t-err{color:var(--g3)}
+
+/* ═══════════════════════════════════════════
+   GRİD SİSTEMİ
+   ═══════════════════════════════════════════ */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:700px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+@media(max-width:1000px){.grid3{grid-template-columns:1fr 1fr}.grid4{grid-template-columns:1fr 1fr}}
+
+/* ═══════════════════════════════════════════
+   ALAN KARTI (Bilgi Alanları)
+   ═══════════════════════════════════════════ */
+.field-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:16px;cursor:pointer;
+  transition:all var(--tr);user-select:none;text-align:center;
+  position:relative;overflow:hidden;
+}
+.field-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent,rgba(0,255,136,0.03));
+  opacity:0;transition:opacity var(--tr);
+}
+.field-card:hover::before{opacity:1}
+.field-card:hover{border-color:var(--g1);transform:translateY(-3px);box-shadow:0 8px 24px var(--shadow)}
+.field-card.selected{border-color:var(--g1);background:rgba(0,255,136,0.05)}
+.field-icon{font-size:26px;margin-bottom:8px}
+.field-name{font-family:var(--font-head);font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text)}
+.field-sub{font-size:10px;color:var(--text3);margin-top:4px}
+.field-prog{
+  width:100%;height:3px;background:var(--border);
+  border-radius:2px;margin-top:10px;overflow:hidden;
+}
+.field-prog-fill{height:100%;background:linear-gradient(90deg,var(--g1),var(--g2));border-radius:2px;transition:width 0.6s ease}
+
+/* ═══════════════════════════════════════════
+   KONU SATIRI
+   ═══════════════════════════════════════════ */
+.topic-row{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;background:var(--bg3);
+  border:1px solid var(--border);border-radius:7px;
+  margin-bottom:7px;cursor:pointer;transition:all var(--tr);
+}
+.topic-row:hover{border-color:var(--g2);padding-left:18px}
+.topic-row.done{border-color:rgba(0,255,136,0.3);background:rgba(0,255,136,0.04)}
+.topic-check{
+  width:18px;height:18px;border-radius:50%;border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;flex-shrink:0;transition:all var(--tr);
+}
+.topic-row.done .topic-check{background:var(--g1);border-color:var(--g1);color:#000}
+
+/* ═══════════════════════════════════════════
+   KONU ANLATIM SAYFASI
+   ═══════════════════════════════════════════ */
+#lesson-overlay{
+  position:fixed;inset:0;z-index:500;
+  background:var(--bg);
+  overflow-y:auto;
+  display:none;padding:30px;
+  animation:fadeUp 0.3s ease;
+}
+#lesson-overlay.open{display:block}
+.lesson-hdr{
+  max-width:800px;margin:0 auto 30px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.lesson-body{max-width:800px;margin:0 auto}
+.lesson-body h2{
+  font-family:var(--font-head);font-size:14px;letter-spacing:2px;
+  color:var(--g1);margin:24px 0 12px;
+}
+.lesson-body h2::before{content:'## ';color:var(--text3)}
+.lesson-body p{color:var(--text2);line-height:1.9;margin-bottom:14px;font-size:13px}
+.lesson-body ul{padding-left:20px;margin-bottom:14px}
+.lesson-body li{color:var(--text2);margin-bottom:6px;font-size:13px}
+.lesson-body code{
+  background:var(--bg3);border:1px solid var(--border2);
+  padding:2px 7px;border-radius:4px;color:var(--g2);font-size:12px;
+}
+.lesson-body pre{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:8px;padding:16px;overflow-x:auto;
+  color:var(--g1);font-size:12px;margin-bottom:14px;
+  border-left:3px solid var(--g1);
+}
+.lesson-callout{
+  padding:14px 18px;border-radius:7px;margin-bottom:14px;
+  border-left:3px solid var(--g5);background:rgba(245,158,11,0.07);
+}
+.lesson-callout.info{border-color:var(--g2);background:rgba(0,212,255,0.06)}
+.lesson-callout.warn{border-color:var(--g3);background:rgba(255,107,53,0.07)}
+.lesson-callout.success{border-color:var(--g1);background:rgba(0,255,136,0.06)}
+.lesson-callout p{margin:0;font-size:12px}
+
+/* ═══════════════════════════════════════════
+   ARAÇ GRID'İ
+   ═══════════════════════════════════════════ */
+.tool-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:18px;
+  transition:border-color var(--tr);
+}
+.tool-card:hover{border-color:var(--g4)}
+.tool-title{
+  font-family:var(--font-head);font-size:11px;letter-spacing:1px;
+  color:var(--g4);display:flex;align-items:center;gap:7px;
+  margin-bottom:13px;
+}
+.tool-title::before{content:'[TOOL]';font-size:9px;color:var(--text3);font-family:var(--font-body)}
+
+/* ═══════════════════════════════════════════
+   FORUM
+   ═══════════════════════════════════════════ */
+.forum-msg{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:16px;margin-bottom:10px;
+  animation:fadeUp 0.3s ease;transition:border-color var(--tr);
+}
+.forum-msg:hover{border-color:var(--border2)}
+.forum-msg-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.f-avatar{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,var(--g1),var(--g4));
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;flex-shrink:0;
+}
+.f-name{font-weight:700;font-size:12px}
+.f-time{font-size:10px;color:var(--text3);margin-left:auto}
+.f-tag{
+  padding:2px 7px;border-radius:3px;font-size:9px;letter-spacing:1px;
+  background:rgba(0,212,255,0.1);color:var(--g2);
+  border:1px solid rgba(0,212,255,0.2);
+}
+.f-tag.exploit{background:rgba(255,107,53,0.1);color:var(--g3);border-color:rgba(255,107,53,0.2)}
+.f-tag.resource{background:rgba(168,85,247,0.1);color:var(--g4);border-color:rgba(168,85,247,0.2)}
+.f-tag.ctf{background:rgba(245,158,11,0.1);color:var(--g5);border-color:rgba(245,158,11,0.2)}
+.f-body{font-size:12px;color:var(--text);line-height:1.7}
+.f-actions{display:flex;gap:6px;margin-top:10px}
+.like-btn{
+  background:none;border:1px solid var(--border);
+  border-radius:5px;color:var(--text3);
+  font-family:var(--font-body);font-size:10px;
+  padding:3px 9px;cursor:pointer;transition:all var(--tr);
+}
+.like-btn:hover,.like-btn.liked{color:var(--g3);border-color:var(--g3);background:rgba(255,107,53,0.08)}
+
+/* ═══════════════════════════════════════════
+   PROFİL & MODAL
+   ═══════════════════════════════════════════ */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,0.85);
+  backdrop-filter:blur(10px);z-index:999;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.modal-bg.hidden{display:none}
+.modal{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:14px;padding:30px;max-width:420px;width:100%;
+  animation:modalIn 0.4s cubic-bezier(.34,1.56,.64,1);
+  position:relative;
+}
+@keyframes modalIn{from{transform:scale(0.85) translateY(16px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.modal h2{
+  font-family:var(--font-head);font-size:16px;font-weight:900;
+  letter-spacing:3px;margin-bottom:6px;
+  background:linear-gradient(135deg,var(--g1),var(--g2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.modal p{font-size:11px;color:var(--text3);margin-bottom:20px}
+.modal-label{font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:6px;display:block;text-transform:uppercase}
+
+/* ═══════════════════════════════════════════
+   ETİK KURALLAR BANNER
+   ═══════════════════════════════════════════ */
+.ethics-bar{
+  padding:12px 18px;margin-bottom:20px;
+  background:rgba(0,255,136,0.05);
+  border:1px solid rgba(0,255,136,0.2);
+  border-radius:var(--r);
+  display:flex;align-items:center;gap:12px;
+  font-size:11px;color:var(--g1);
+  cursor:pointer;transition:background var(--tr);
+}
+.ethics-bar:hover{background:rgba(0,255,136,0.08)}
+.ethics-bar-icon{font-size:18px;flex-shrink:0}
+.ethics-author{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* ═══════════════════════════════════════════
+   GİZLİLİK MODU BANDI
+   ═══════════════════════════════════════════ */
+#priv-bar{
+  display:none;padding:8px 18px;
+  background:rgba(255,107,53,0.1);border-bottom:1px solid rgba(255,107,53,0.3);
+  text-align:center;font-size:11px;color:var(--g3);
+  animation:pvBlink 3s infinite;
+}
+#priv-bar.on{display:block}
+@keyframes pvBlink{0%,100%{opacity:1}50%{opacity:0.6}}
+
+/* ═══════════════════════════════════════════
+   PROGRESS & STATS
+   ═══════════════════════════════════════════ */
+.stat-box{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:16px;text-align:center;
+}
+.stat-n{
+  font-family:var(--font-head);font-size:32px;font-weight:900;
+  background:linear-gradient(135deg,var(--g1),var(--g2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.stat-l{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-top:4px}
+.prog-row{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:14px;margin-bottom:8px;
+}
+.prog-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.prog-name{font-size:12px;font-weight:700}
+.prog-pct{font-family:var(--font-head);font-size:12px;color:var(--g1)}
+.prog-bar{width:100%;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--g1),var(--g2));border-radius:3px;transition:width 0.8s cubic-bezier(.4,0,.2,1)}
+
+/* ═══════════════════════════════════════════
+   ROZET
+   ═══════════════════════════════════════════ */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;
+  letter-spacing:0.5px;text-transform:uppercase;
+}
+.badge-green{background:rgba(0,255,136,0.1);color:var(--g1);border:1px solid rgba(0,255,136,0.25)}
+.badge-blue{background:rgba(0,212,255,0.1);color:var(--g2);border:1px solid rgba(0,212,255,0.25)}
+.badge-orange{background:rgba(255,107,53,0.1);color:var(--g3);border:1px solid rgba(255,107,53,0.25)}
+.badge-purple{background:rgba(168,85,247,0.1);color:var(--g4);border:1px solid rgba(168,85,247,0.25)}
+.badge-gold{background:rgba(245,158,11,0.1);color:var(--g5);border:1px solid rgba(245,158,11,0.25)}
+
+/* ═══════════════════════════════════════════
+   ANASAYFA HEROsu
+   ═══════════════════════════════════════════ */
+.hero{
+  text-align:center;padding:40px 20px;
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'WHITE WEB';
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:var(--font-head);font-size:120px;font-weight:900;
+  color:transparent;-webkit-text-stroke:1px rgba(0,255,136,0.04);
+  white-space:nowrap;pointer-events:none;z-index:0;
+  letter-spacing:20px;
+}
+.hero-content{position:relative;z-index:1}
+.hero h1{
+  font-family:var(--font-head);font-size:28px;font-weight:900;
+  letter-spacing:6px;margin-bottom:10px;
+  background:linear-gradient(135deg,var(--g1),var(--g2),var(--g4));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero p{font-size:13px;color:var(--text2);max-width:580px;margin:0 auto 24px;line-height:1.9}
+.hero-stats{
+  display:flex;justify-content:center;gap:30px;flex-wrap:wrap;
+  margin-top:24px;padding-top:24px;border-top:1px solid var(--border);
+}
+.h-stat{text-align:center}
+.h-stat-n{
+  font-family:var(--font-head);font-size:22px;font-weight:900;color:var(--g1);
+}
+.h-stat-l{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
+.principles{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:12px;margin-top:30px;
+}
+.principle-card{
+  padding:16px;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);text-align:left;
+  transition:border-color var(--tr);
+}
+.principle-card:hover{border-color:var(--g1)}
+.pc-icon{font-size:22px;margin-bottom:8px}
+.pc-title{font-family:var(--font-head);font-size:11px;letter-spacing:1px;color:var(--g1);margin-bottom:6px}
+.pc-text{font-size:11px;color:var(--text3);line-height:1.7}
+
+/* ═══════════════════════════════════════════
+   ŞİFRELİ NOTLAR
+   ═══════════════════════════════════════════ */
+.note-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;background:var(--bg3);
+  border:1px solid var(--border);border-radius:7px;
+  margin-bottom:7px;transition:all var(--tr);
+}
+.note-item:hover{border-color:var(--g4)}
+.note-nm{font-size:12px;font-weight:700;flex:1}
+.note-meta{font-size:10px;color:var(--text3)}
+
+/* ═══════════════════════════════════════════
+   DOSYALAR
+   ═══════════════════════════════════════════ */
+.upload-zone{
+  border:2px dashed var(--border2);border-radius:var(--r);
+  padding:36px 20px;text-align:center;cursor:pointer;
+  transition:all var(--tr);margin-bottom:18px;
+}
+.upload-zone:hover,.upload-zone.over{border-color:var(--g1);background:rgba(0,255,136,0.03)}
+.file-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;background:var(--card);
+  border:1px solid var(--border);border-radius:7px;
+  margin-bottom:7px;animation:fadeUp 0.3s ease;
+}
+.file-nm{font-size:12px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-meta{font-size:10px;color:var(--text3)}
+
+/* ═══════════════════════════════════════════
+   FAVORİLER
+   ═══════════════════════════════════════════ */
+.fav-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 14px;background:var(--bg3);
+  border:1px solid var(--border);border-radius:7px;
+  margin-bottom:7px;animation:fadeUp 0.3s ease;
+}
+.fav-item:hover{border-color:var(--g5)}
+
+/* ═══════════════════════════════════════════
+   TOAST
+   ═══════════════════════════════════════════ */
+#toast-box{
+  position:fixed;bottom:20px;right:20px;z-index:9999;
+  display:flex;flex-direction:column;gap:7px;pointer-events:none;
+}
+.toast{
+  padding:10px 16px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:8px;font-size:11px;max-width:260px;
+  animation:toastIn 0.3s ease;pointer-events:auto;
+  display:flex;align-items:center;gap:8px;
+}
+.toast.ok{border-color:var(--g1);color:var(--g1)}
+.toast.err{border-color:var(--g3);color:var(--g3)}
+.toast.inf{border-color:var(--g2);color:var(--g2)}
+.toast.tool{border-color:var(--g4);color:var(--g4)}
+@keyframes toastIn{from{transform:translateX(16px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ═══════════════════════════════════════════
+   YARDIMCI
+   ═══════════════════════════════════════════ */
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sp{flex:1}
+.divider{border:none;border-top:1px solid var(--border);margin:18px 0}
+.empty{padding:40px;text-align:center;color:var(--text3);font-size:12px}
+.empty .ei{font-size:32px;margin-bottom:8px}
+.tag-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.tag{padding:2px 8px;border-radius:3px;font-size:10px;background:var(--bg3);border:1px solid var(--border);color:var(--text3)}
+.hl{color:var(--g1)}
+.hl2{color:var(--g2)}
+.hl3{color:var(--g3)}
+.mono{font-family:var(--font-body)}
+</style>
+</head>
+<body>
+
+<!-- Matrix Rain Canvas -->
+<canvas id="matrix-canvas"></canvas>
+
+<!-- Gizlilik modu bandı -->
+<div id="priv-bar">🔒 GİZLİLİK MODU AKTİF — İz bırakmadan geziyorsun. Hiçbir şey kaydedilmiyor.</div>
+
+<!-- TOAST -->
+<div id="toast-box"></div>
+
+<!-- SETUP MODAL -->
+<div class="modal-bg" id="setup-modal">
+  <div class="modal">
+    <h2>ACCESS INIT</h2>
+    <p>Kimliğini oluştur. Gerçek ad zorunlu değil. Sadece bir takma ad ve misyon seç.</p>
+    <label class="modal-label">// Takma adın</label>
+    <input class="inp" type="text" id="s-name" placeholder="ör: 0xVoid_42 / NullPtr_7" maxlength="30"/>
+    <label class="modal-label">// Avatar emojin</label>
+    <input class="inp" type="text" id="s-emoji" placeholder="⚡ 🦅 🔭 🧬 ⚛️ 🕶️" maxlength="4"/>
+    <label class="modal-label">// Uzmanlık alanın</label>
+    <select class="inp" id="s-role">
+      <option value="Etik Hacker">🛡️ Etik Hacker</option>
+      <option value="Araştırmacı">🔬 Araştırmacı</option>
+      <option value="Öğrenci">📚 Öğrenci</option>
+      <option value="Matematikçi">∑ Matematikçi</option>
+      <option value="Fizikçi">⚛️ Fizikçi</option>
+      <option value="Yazılımcı">💻 Yazılımcı</option>
+      <option value="Meraklı">❓ Meraklı</option>
+    </select>
+    <div style="background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.15);border-radius:7px;padding:12px;margin-bottom:16px;font-size:11px;color:var(--text3);line-height:1.8">
+      ⚠️ Bu platforma girerek şunu kabul ediyorsun:<br/>
+      Buradaki tüm araçları ve bilgileri <strong style="color:var(--g1)">yasal, etik ve yapıcı amaçlarla</strong> kullanacaksın. Zarar vermek için değil, anlamak için.
+    </div>
+    <button class="btn btn-g" onclick="doSetup()" style="width:100%;justify-content:center;padding:12px;font-size:13px">
+      ⚡ WHITE WEB'E GİR
+    </button>
+  </div>
+</div>
+
+<!-- KONU ANLATIM OVERLAY -->
+<div id="lesson-overlay">
+  <div class="lesson-hdr">
+    <button class="btn" onclick="closeLesson()">← Geri</button>
+    <div>
+      <div id="lesson-title" style="font-family:var(--font-head);font-size:14px;letter-spacing:2px;color:var(--g1)"></div>
+      <div id="lesson-field" style="font-size:10px;color:var(--text3);margin-top:2px"></div>
+    </div>
+    <div class="sp"></div>
+    <button class="btn btn-sm" onclick="toggleLessonDone()">✓ Tamamladım</button>
+    <button class="btn btn-sm" onclick="addToFav('lesson',currentLesson.topic)" title="Favorile">⭐</button>
+  </div>
+  <div class="lesson-body" id="lesson-body"></div>
+</div>
+
+<!-- ANA APP -->
+<div id="app">
+  <!-- HEADER -->
+  <div id="header">
+    <div class="logo-wrap">
+      <div class="logo-main">WHITE WEB</div>
+      <div class="logo-sub">Etik Hackerların Merkezi · Bilginin Açık Denizi</div>
+      <div class="logo-badge">ETHICAL · OPEN · SECURE</div>
+    </div>
+    <div class="hdr-spacer"></div>
+    <div class="hdr-controls">
+      <button class="btn btn-sm" id="priv-btn" onclick="togglePrivacy()">👁 Gizlilik</button>
+      <button class="btn btn-sm" id="theme-btn" onclick="toggleTheme()">☀️ Light</button>
+      <button class="btn btn-sm" onclick="document.getElementById('setup-modal').classList.remove('hidden')" id="profile-hdr-btn">👤 —</button>
+    </div>
+  </div>
+
+  <!-- SİDEBAR -->
+  <div id="sidebar">
+    <div class="sb-section-title">// PLATFORM</div>
+    <div class="sb-item active" onclick="nav('home',this)"><span class="icon">⬡</span> Ana Sayfa</div>
+    <div class="sb-item" onclick="nav('fields',this)"><span class="icon">🗂️</span> Bilgi Alanları <span class="sb-badge" id="sb-fields-badge">20+</span></div>
+    <div class="sb-item" onclick="nav('tools',this)"><span class="icon">⚙️</span> Etik Araçlar</div>
+    <div class="sb-item" onclick="nav('forum',this)"><span class="icon">💬</span> Forum</div>
+    <hr class="sb-divider"/>
+    <div class="sb-section-title">// KİŞİSEL</div>
+    <div class="sb-item" onclick="nav('notes',this)"><span class="icon">🔐</span> Şifreli Notlar</div>
+    <div class="sb-item" onclick="nav('files',this)"><span class="icon">📁</span> Dosyalar</div>
+    <div class="sb-item" onclick="nav('favorites',this)"><span class="icon">⭐</span> Favoriler</div>
+    <div class="sb-item" onclick="nav('progress',this)"><span class="icon">📊</span> İlerleme</div>
+    <hr class="sb-divider"/>
+    <div class="sb-section-title">// BİLGİ</div>
+    <div class="sb-item" onclick="nav('ethics',this)"><span class="icon">⚖️</span> Etik Tüzük</div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="main">
+
+    <!-- ═══ PANEL: ANASAYFA ═══ -->
+    <div class="panel active" id="panel-home">
+      <div class="hero">
+        <div class="hero-content">
+          <div style="font-size:11px;color:var(--text3);letter-spacing:4px;text-transform:uppercase;margin-bottom:10px">// ETİK HACKERLARIN MERKEZİ</div>
+          <h1>WHITE WEB</h1>
+          <p>Dark Web'den değil, <strong style="color:var(--g1)">aydınlık web'den</strong> güç alıyoruz. Anonymous'tan değil, <strong style="color:var(--g2)">bilimden ve etikten</strong> güç alıyoruz. Bu platform; merak eden, anlayan ve dünyayı daha iyi yapan herkese aittir.</p>
+          <div class="row" style="justify-content:center;gap:10px">
+            <button class="btn btn-g" onclick="nav('fields',document.querySelector('[onclick*=\"fields\"]'))">🗂️ Öğrenmeye Başla</button>
+            <button class="btn btn-tool" onclick="nav('tools',document.querySelector('[onclick*=\"tools\"]'))">⚙️ Araçları Keşfet</button>
+          </div>
+          <div class="hero-stats" id="hero-stats"></div>
+        </div>
+      </div>
+      <div class="principles" id="principles-grid"></div>
+    </div>
+
+    <!-- ═══ PANEL: BİLGİ ALANLARI ═══ -->
+    <div class="panel" id="panel-fields">
+      <div class="panel-hdr">
+        <div>
+          <h1>BİLGİ ALANLARI</h1>
+          <p>20+ alan · Her alan sıfırdan konu anlatımlı · Tıkla ve öğren</p>
+        </div>
+        <div class="sp"></div>
+        <input class="inp" type="text" id="field-search" placeholder="🔍 Alan veya konu ara..." style="width:220px;margin:0" oninput="filterFields()"/>
+      </div>
+      <div id="fields-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px"></div>
+      <div id="topics-section" style="display:none">
+        <div class="row" style="margin-bottom:16px">
+          <div id="topics-title" style="font-family:var(--font-head);font-size:14px;letter-spacing:2px;color:var(--g1)"></div>
+          <div class="sp"></div>
+          <button class="btn btn-sm" onclick="resetFieldProgress()">↺ Sıfırla</button>
+          <button class="btn btn-sm" onclick="closeTopic()">✕ Kapat</button>
+        </div>
+        <div id="topics-list"></div>
+      </div>
+    </div>
+
+    <!-- ═══ PANEL: ETİK ARAÇLAR ═══ -->
+    <div class="panel" id="panel-tools">
+      <div class="panel-hdr">
+        <div>
+          <h1>ETİK ARAÇLAR</h1>
+          <p>OSINT · Hash · Encode · Subnet · Regex · Crypto · Port — Hepsi etik ve yasal kullanım için</p>
+        </div>
+      </div>
+      <div style="background:rgba(255,107,53,0.07);border:1px solid rgba(255,107,53,0.2);border-radius:var(--r);padding:12px 16px;margin-bottom:20px;font-size:11px;color:var(--g3)">
+        ⚠️ Bu araçlar yalnızca <strong>kendi sistemlerinde</strong>, <strong>yetkili testlerde</strong> veya <strong>eğitim amaçlı</strong> kullanılır. İzinsiz sistemlere karşı kullanmak yasadışıdır.
+      </div>
+      <div class="grid2" id="tools-container"></div>
+    </div>
+
+    <!-- ═══ PANEL: FORUM ═══ -->
+    <div class="panel" id="panel-forum">
+      <div class="panel-hdr"><h1>FORUM</h1><p>Anonim · Özgür · Etik</p></div>
+      <div class="card">
+        <div class="card-title">YENİ MESAJ</div>
+        <textarea class="inp" id="f-input" placeholder="Sor, paylaş, tartış... Hiçbir soru aptalca değildir."></textarea>
+        <div class="row">
+          <select class="inp" id="f-tag" style="width:auto;margin:0">
+            <option value="Soru">❓ Soru</option>
+            <option value="CTF">🏴 CTF</option>
+            <option value="Kaynak">📚 Kaynak</option>
+            <option value="Tartışma">💬 Tartışma</option>
+            <option value="Araç">⚙️ Araç</option>
+            <option value="Haber">📰 Haber</option>
+            <option value="Düşünce">💡 Düşünce</option>
+          </select>
+          <div class="sp"></div>
+          <button class="btn" onclick="document.getElementById('f-input').value=''">Temizle</button>
+          <button class="btn btn-g" onclick="postForum()">Gönder →</button>
+        </div>
+      </div>
+      <div id="forum-list"></div>
+    </div>
+
+    <!-- ═══ PANEL: ŞİFRELİ NOTLAR ═══ -->
+    <div class="panel" id="panel-notes">
+      <div class="panel-hdr"><h1>ŞİFRELİ NOTLAR</h1><p>AES-GCM · Web Crypto API · Gerçek şifreleme</p></div>
+      <div class="grid2">
+        <div>
+          <div class="card">
+            <div class="card-title">NOT YAZ</div>
+            <input class="inp" type="text" id="n-title" placeholder="Başlık..."/>
+            <textarea class="inp" id="n-body" placeholder="Notunu yaz..."></textarea>
+            <input class="inp" type="password" id="n-pass" placeholder="🔑 Şifre (boş = şifresiz)"/>
+            <div class="row">
+              <button class="btn btn-g btn-sm" onclick="saveNote()">💾 Kaydet</button>
+              <button class="btn btn-sm" onclick="encShow()">🔒 Şifrele &amp; Göster</button>
+              <button class="btn btn-sm" onclick="clearNoteForm()">🗑️</button>
+            </div>
+            <div class="terminal" id="enc-out"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">DEŞİFRE ET</div>
+            <textarea class="inp" id="dec-in" style="min-height:70px" placeholder="Şifreli metni yapıştır..."></textarea>
+            <input class="inp" type="password" id="dec-pass" placeholder="🔑 Şifre"/>
+            <button class="btn btn-sm" onclick="doDecrypt()">🔓 Deşifre Et</button>
+            <div class="terminal" id="dec-out"></div>
+          </div>
+        </div>
+        <div class="card" style="height:fit-content">
+          <div class="card-title">KAYITLI NOTLAR <span style="font-size:10px;color:var(--text3)" id="notes-cnt"></span></div>
+          <div id="notes-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PANEL: DOSYALAR ═══ -->
+    <div class="panel" id="panel-files">
+      <div class="panel-hdr"><h1>DOSYALAR</h1><p>PDF, makale, araştırma — paylaş ve indir</p></div>
+      <div class="upload-zone" onclick="document.getElementById('file-inp').click()"
+           ondragover="ev.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')"
+           ondrop="this.classList.remove('over');handleDrop(event)">
+        <div style="font-size:32px;margin-bottom:8px">📤</div>
+        <div style="font-size:13px;color:var(--text2)">Dosya yükle — tıkla veya sürükle</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:6px">PDF · DOCX · TXT · MD · PNG · JPG — Max 10MB</div>
+      </div>
+      <input type="file" id="file-inp" style="display:none" accept=".pdf,.docx,.txt,.md,.png,.jpg,.jpeg" onchange="handleFileSel(event)"/>
+      <div id="files-list"></div>
+    </div>
+
+    <!-- ═══ PANEL: FAVORİLER ═══ -->
+    <div class="panel" id="panel-favorites">
+      <div class="panel-hdr"><h1>FAVORİLER</h1><p>Konular, araçlar, forum mesajları</p></div>
+      <div id="fav-list"></div>
+    </div>
+
+    <!-- ═══ PANEL: İLERLEME ═══ -->
+    <div class="panel" id="panel-progress">
+      <div class="panel-hdr"><h1>İLERLEME TAKİBİ</h1></div>
+      <div class="grid4" id="stats-grid" style="margin-bottom:20px"></div>
+      <div class="divider"></div>
+      <div style="font-family:var(--font-head);font-size:11px;letter-spacing:2px;color:var(--text3);margin-bottom:14px">// ALAN BAZLI İLERLEME</div>
+      <div id="prog-list"></div>
+      <div class="divider"></div>
+      <div class="row">
+        <span style="font-size:11px;color:var(--text3)">Tüm ilerlemeni sıfırlamak istersen:</span>
+        <div class="sp"></div>
+        <button class="btn btn-warn btn-sm" onclick="resetAllProg()">⚠️ Tümünü Sıfırla</button>
+      </div>
+    </div>
+
+    <!-- ═══ PANEL: ETİK TÜZÜK ═══ -->
+    <div class="panel" id="panel-ethics">
+      <div class="panel-hdr"><h1>ETİK TÜZÜK</h1><p>White Web'in değerleri ve prensipler</p></div>
+      <div id="ethics-body"></div>
+    </div>
+
+  </div><!-- /#main -->
+</div><!-- /#app -->
+
+<script>
+/* ╔════════════════════════════════════════════
+   ║  WHITE WEB — ANA JS MOTORU
+   ╚════════════════════════════════════════════ */
+
+/* ── DURUM ─────────────────────────────────── */
+const S={
+  profile:null, theme:'dark', privacy:false,
+  forum:[], notes:[], files:[], favs:[], progress:{},
+  quoteIdx:0
+};
+let currentLesson={field:null,topic:null};
+
+/* ── YARDIMCI ─────────────────────────────── */
+const $=id=>document.getElementById(id);
+function esc(s){const d=document.createElement('div');d.appendChild(document.createTextNode(String(s||'')));return d.innerHTML}
+function ls(k,v){if(v===undefined){try{return JSON.parse(localStorage.getItem('ww_'+k))}catch{return null}}else{if(!S.privacy)try{localStorage.setItem('ww_'+k,JSON.stringify(v))}catch{}}}
+function toast(msg,type='ok'){
+  const t=document.createElement('div');
+  t.className='toast '+type;t.textContent=msg;
+  $('toast-box').appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='0.3s'},2800);
+  setTimeout(()=>t.remove(),3200);
+}
+function fmtBytes(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB'}
+
+/* ── ETİK SÖZLER ─────────────────────────── */
+const QUOTES=[
+  {t:"Bilgi, zincirlerimizi kırmak için verilen en keskin silahtır.",a:"Frederick Douglass"},
+  {t:"Gizlilik bir suç değil, temel bir insan hakkıdır.",a:"Edward Snowden"},
+  {t:"İnterneti anlamayan özgür olamaz. İnterneti kötüye kullanan köledir.",a:"White Web"},
+  {t:"En büyük hack: insanların kendi veri gizliliklerini önemsememesi.",a:"Anonim"},
+  {t:"Etik hacker sistemi kırmaz — güçlendirir.",a:"White Web Tüzüğü"},
+  {t:"Kriptografi dili öğrenmek, sansürün dilini bozmaktır.",a:"Bruce Schneier (uyarlanmış)"},
+  {t:"Matematiği anlayan, evrenin şifresini çözmeye başlar.",a:"Carl Sagan"},
+  {t:"Açık kaynak, açık zihinlerin ürünüdür.",a:"Richard Stallman"},
+  {t:"Fizik yasaları hacklenemez. Ama onları anlamak seni özgür kılar.",a:"Richard Feynman (uyarlanmış)"},
+  {t:"Soru sormak, cevap bulmaktan çok daha değerlidir.",a:"Albert Einstein"},
+  {t:"Teknoloji tarafsızdır. Onu kullanan insan değildir.",a:"White Web"},
+  {t:"Güç ile sorumluluk kardeştir. Birini alıyorsan diğerini de taşımalısın.",a:"Stan Lee"},
+  {t:"Her şifreli mesaj bir özgürlük çığlığıdır.",a:"Anonim"},
+  {t:"Eğitim en güçlü silahtır; dünyayı değiştirmek için kullanabilirsin.",a:"Nelson Mandela"},
+  {t:"İyi bir hacker sistemi anlamak için kırar. İyi bir etik hacker anlamak için düşünür.",a:"White Web"},
+];
+
+/* ══════════════════════════════════════════════
+   BİLGİ ALANLARI — 20+ alan, zengin konu listeleri
+   ══════════════════════════════════════════════ */
+const FIELDS=[
+  {id:'siber',name:'Siber Güvenlik',icon:'🛡️',color:'var(--g1)',
+   topics:['Ağ Güvenliğine Giriş','OSI Modeli ve Protokoller','TCP/IP Temelleri','Kriptografi 101','Simetrik Şifreleme (AES, DES)','Asimetrik Şifreleme (RSA, ECC)','Hash Fonksiyonları','Dijital İmzalar ve Sertifikalar','SSL/TLS Nasıl Çalışır?','Web Güvenliği (OWASP Top 10)','SQL Injection','XSS (Cross-Site Scripting)','CSRF ve Clickjacking','Güvenlik Duvarı ve IDS/IPS','VPN Mimarisi','Tor Ağı ve Onion Routing','Sosyal Mühendislik','Phishing Anatomy','Malware Analizi Temelleri','Tersine Mühendislik 101','OSINT Teknikleri','Adli Bilişim (Forensics)','CTF Stratejileri','Penetrasyon Testi Metodolojisi','Bug Bounty 101']},
+  {id:'matematik',name:'Matematik',icon:'∑',color:'var(--g2)',
+   topics:['Mantık ve Önermeler','Küme Teorisi','Sayı Sistemleri','Sayı Teorisi','Modüler Aritmetik','Kombinatorik','Olasılık Teorisi','İstatistik Temelleri','Matrisler ve Lineer Cebir','Vektör Uzayları','Diferansiyel Hesap','İntegral Hesap','Diferansiyel Denklemler','Topoloji Temelleri','Ayrık Matematik','Graf Teorisi','Otomat Teorisi','Karmaşıklık Teorisi','Oyun Teorisi','Kriptografi Matematiği']},
+  {id:'fizik',name:'Fizik',icon:'⚛️',color:'var(--g5)',
+   topics:['Klasik Mekanik','Newton Yasaları','Termodinamik','Entropi ve Düzen','Elektrik Temelleri','Manyetizma','Maxwell Denklemleri','Elektromanyetik Dalgalar','Optik','Kuantum Mekaniğine Giriş','Dalga-Parçacık Dualitesi','Schrödinger Denklemi','Özel Görelilik','Genel Görelilik','Parçacık Fiziği','Standart Model','Sicim Teorisi (Giriş)','Yarı İletkenler','Süperiletkenlik','Plazma Fiziği']},
+  {id:'nukfiz',name:'Nükleer Fizik',icon:'☢️',color:'var(--g3)',
+   topics:['Atom Çekirdeği Yapısı','Radyoaktif Bozunma','Alfa, Beta, Gama Işıması','Yarı Ömür ve Hesapları','Fisyon Reaksiyonları','Füzyon Reaksiyonları','Nükleer Reaktör Fiziği','Nötron Fiziği','Radyasyon Dozimetrisi','Nükleer Tıp Uygulamaları','Nükleer Enerji ve Etik','Radyoaktif Atık Yönetimi','Nükleer Silahlar ve Kontrol (Tarihsel)','Nükleer Güvenlik Standartları','Füzyon Enerjisi Geleceği']},
+  {id:'astro',name:'Astrofizik',icon:'🔭',color:'var(--g2)',
+   topics:['Güneş Sistemi','Yıldız Oluşumu','Yıldız Evreleri ve Ölümü','Süpernova','Nötron Yıldızları','Karadelikler','Hawking Radyasyonu','Galaksiler','Büyük Patlama (Big Bang)','Kozmik Mikrodalga Arka Planı','Karanlık Madde','Karanlık Enerji','Evrenin Genişlemesi','Öte Gezegenler (Exoplanetler)','Yaşam Araştırmaları (Astrobiyoloji)','Gravitasyonel Dalgalar','Gamma Işını Patlamaları']},
+  {id:'nano',name:'Nanoteknoloji',icon:'🔬',color:'var(--g4)',
+   topics:['Nano Ölçek Nedir?','Nanopartiküller','Kuantum Nokta Yapıları','Karbon Nanotüpler','Grafen','Nano Malzemeler','Biyonanoteknoloji','Nano Tıp','Hedefli İlaç Salımı','Nanofabrikasyon','Nano Elektroniği','Nano Robotlar (Kavramsal)','Nano Güvenliği','Çevre ve Nano','Gelecekte Nanoteknoloji']},
+  {id:'kimya',name:'Kimya',icon:'🧪',color:'var(--g5)',
+   topics:['Atom Modelleri','Periyodik Tablo','Kimyasal Bağlar','Organik Kimya Temelleri','Fonksiyonel Gruplar','Reaksiyon Mekanizmaları','Polimerizasyon','Biyokimya','Protein Yapısı','DNA ve RNA Kimyası','Elektrokimya','Termodinamik Kimya','Analitik Kimya','Spektroskopi','Yeşil Kimya']},
+  {id:'biyoloji',name:'Biyoloji',icon:'🧬',color:'var(--g1)',
+   topics:['Hücre Yapısı','Mitoz ve Mayoz','DNA Replikasyonu','Gen Ekspresyonu','Evrim Teorisi','Genetik','Epigenetik','Mikrobiyoloji','Virüs Biyolojisi','Bağışıklık Sistemi','Sinir Sistemi','Biyoteknoloji','CRISPR ve Gen Düzenleme','Sentetik Biyoloji','Biyoinformatik']},
+  {id:'matematik2',name:'İstatistik & ML',icon:'📈',color:'var(--g2)',
+   topics:['Tanımlayıcı İstatistik','Olasılık Dağılımları','Hipotez Testleri','Regresyon Analizi','Makine Öğrenmesi Temelleri','Denetimli Öğrenme','Denetimsiz Öğrenme','Sinir Ağları','Derin Öğrenme','CNN Mimarisi','RNN ve LSTM','Doğal Dil İşleme','Pekiştirmeli Öğrenme','Veri Ön İşleme','Model Değerlendirme']},
+  {id:'prog',name:'Programlama',icon:'💻',color:'var(--g4)',
+   topics:['Algoritma Temelleri','Veri Yapıları','Zaman/Uzay Karmaşıklığı','Python Temelleri','C ve Sistem Programlama','Assembly Dili (x86)','Web Geliştirme Temelleri','JavaScript Derinlikleri','Veritabanı ve SQL','İşletim Sistemi Kavramları','Bellek Yönetimi','Derleyici Tasarımı','Paralel Programlama','Fonksiyonel Programlama','Tasarım Desenleri']},
+  {id:'hukuk',name:'Hukuk & Dijital',icon:'⚖️',color:'var(--g5)',
+   topics:['Anayasa Hukuku Temelleri','Ceza Hukuku','Dijital Hukuk (Siber Hukuk)','KVKK ve GDPR','Fikri Mülkiyet','Telif Hakkı ve Lisanslama','Açık Kaynak Lisansları','İnternet Özgürlüğü','E-Ticaret Hukuku','Hacking ve Hukuki Sınırlar','Adli Bilişim Hukuku','Uluslararası Siber Hukuk','Mahremiyetin Hukuki Korunması','Veri İhlali Hukuku','Yapay Zeka Etiği ve Hukuku']},
+  {id:'tarih',name:'Tarih',icon:'📜',color:'var(--g5)',
+   topics:['Antik Medeniyetler','Antik Yunan ve Bilim','Rönesans ve Reformasyon','Sanayi Devrimi','1. Dünya Savaşı','2. Dünya Savaşı','Soğuk Savaş','Bilgisayarın Tarihi','İnternetin Doğuşu','Hacking Tarihi','Kriptografinin Tarihi','Özgür Yazılım Hareketi','Anonymous ve Hacktivizm','WikiLeaks Olayı','Dijital Çağ ve Toplum']},
+  {id:'cografya',name:'Coğrafya',icon:'🌍',color:'var(--g2)',
+   topics:['Fiziki Coğrafya Temelleri','Levha Tektoniği','Volkanizm ve Depremler','İklim Sistemleri','Hidrografya','Biyoçeşitlilik Bölgeleri','Beşeri Coğrafya','Kentleşme','Coğrafi Bilgi Sistemleri (GIS)','Uzaktan Algılama','Dijital Haritacılık','Çevre Sorunları','İklim Değişikliği','Enerji Coğrafyası','Jeopolitik']},
+  {id:'felsefe',name:'Felsefe',icon:'🧠',color:'var(--g4)',
+   topics:['Epistemoloji Nedir?','Ontoloji Temelleri','Etik Teorileri','Ahlak Felsefesi','Siyaset Felsefesi','Dil Felsefesi','Analitik Felsefe','Kıta Felsefesi','Varoluşçuluk','Fenomenoloji','Bilim Felsefesi','Mantık','Yapay Zeka Felsefesi','Teknoloji Etiği','Dijital Çağ Felsefesi']},
+  {id:'ekonomi',name:'Ekonomi',icon:'💹',color:'var(--g5)',
+   topics:['Mikro Ekonomi Temelleri','Makro Ekonomi','Piyasa Yapıları','Para Teorisi','Fiskal Politika','Oyun Teorisi','Davranışsal Ekonomi','Kripto Ekonomisi','Blockchain Ekonomisi','Kalkınma Ekonomisi','Küreselleşme','Ekonomik Eşitsizlik','Kaynakların Dağılımı','Çevresel Ekonomi','Geleceğin Ekonomisi']},
+  {id:'kuantum',name:'Kuantum Bilişim',icon:'🔮',color:'var(--g2)',
+   topics:['Klasik vs Kuantum Hesaplama','Qubit Nedir?','Süperpozisyon','Dolanıklık (Entanglement)','Kuantum Geçitleri','Kuantum Devre Tasarımı','Shor Algoritması','Grover Algoritması','Kuantum Kriptografisi','Kuantum Anahtar Dağıtımı (QKD)','Kuantum Hata Düzeltme','Kuantum Donanımları','IBM Quantum Experience','Kuantum Üstünlüğü','Kuantum Bilişimin Geleceği']},
+  {id:'uzay',name:'Uzay Bilimleri',icon:'🚀',color:'var(--g3)',
+   topics:['Uzay Nedir?','Orbital Mekanik','Roket Fiziği','Uzay Araçları Tasarımı','Hayatta Kalma Sistemleri','Mars Kolonizasyonu','Öte Gezegen Arayışı','Uzay Hukuku','Uzay Ekonomisi','Asteroid Madenciliği','Uzay Teleskopları','Uzayda Yapay Zeka','SpaceX ve Özel Sektör','Feza ve İnsan Fizyolojisi','Uzayın Geleceği']},
+  {id:'psikoji',name:'Psikoloji',icon:'🧩',color:'var(--g4)',
+   topics:['Davranış Psikolojisi','Bilişsel Psikoloji','Sosyal Mühendislik Psikolojisi','Manipülasyon Teknikleri (Farkındalık)','Karar Verme Psikolojisi','Risk Algısı','Gruplar Psikolojisi','Liderlik Psikolojisi','Dijital Bağımlılık','Siber Psikoloji','Hacker Psikolojisi','Propaganda Analizi','Medya Okuryazarlığı','Nörobilim Temelleri','Zihin ve Teknoloji']},
+  {id:'cevrebilim',name:'Çevre Bilimi',icon:'🌱',color:'var(--g1)',
+   topics:['Ekosistemler','Biyojeokimyasal Döngüler','Hava Kirliliği','Su Kirliliği','İklim Değişikliği Temelleri','Sera Etkisi','Yenilenebilir Enerji','Güneş Enerjisi Teknolojisi','Rüzgar Enerjisi','Nükleer Enerji ve Çevre','Karbon Yakalama','Sürdürülebilirlik','Çevre Hukuku','Ekolojik Ayak İzi','Geleceğin Çevre Teknolojileri']},
+  {id:'diller',name:'Dil & Linguistik',icon:'🗣️',color:'var(--g2)',
+   topics:['Dilin Yapısı','Fonoloji','Morfoloji','Sözdizimi','Anlambilim','Pragmatik','Dil Edinimi','Çift Dillilik','Yapay Diller (Esperanto, Lojban)','Programlama Dillerinin Linguistiği','Doğal Dil İşleme','Makine Çevirisi','Discourse Analizi','Sosyolinguistik','Dilin Evrimi']},
+];
+
+/* ══════════════════════════════════════════════
+   ETİK ARAÇLAR TANIMI
+   ══════════════════════════════════════════════ */
+const TOOLS=[
+  {
+    id:'hash', title:'Hash Hesaplayıcı',
+    desc:'MD5, SHA-1, SHA-256, SHA-512 hash üret',
+    html:`
+      <input class="inp" id="t-hash-in" placeholder="Hash'lenecek metin..."/>
+      <select class="inp" id="t-hash-alg">
+        <option value="SHA-256">SHA-256</option>
+        <option value="SHA-512">SHA-512</option>
+        <option value="SHA-1">SHA-1</option>
+      </select>
+      <button class="btn btn-tool btn-sm" onclick="doHash()">⚙️ Hesapla</button>
+      <div class="terminal" id="t-hash-out"></div>
+    `,
+    run:null
+  },
+  {
+    id:'encode', title:'Encode / Decode',
+    desc:'Base64, URL, HTML encode & decode',
+    html:`
+      <textarea class="inp" id="t-enc-in" style="min-height:70px" placeholder="Metin..."></textarea>
+      <select class="inp" id="t-enc-type">
+        <option value="b64e">Base64 Encode</option>
+        <option value="b64d">Base64 Decode</option>
+        <option value="urle">URL Encode</option>
+        <option value="urld">URL Decode</option>
+        <option value="hxe">Hex Encode</option>
+        <option value="hxd">Hex Decode</option>
+        <option value="rote">ROT13</option>
+        <option value="bine">Binary Encode</option>
+        <option value="bind">Binary Decode</option>
+      </select>
+      <button class="btn btn-tool btn-sm" onclick="doEncode()">⚙️ Dönüştür</button>
+      <div class="terminal" id="t-enc-out"></div>
+    `
+  },
+  {
+    id:'subnet', title:'Subnet Hesaplayıcı',
+    desc:'IP/CIDR → Network, broadcast, host sayısı',
+    html:`
+      <input class="inp" id="t-sub-in" placeholder="ör: 192.168.1.0/24"/>
+      <button class="btn btn-tool btn-sm" onclick="doSubnet()">⚙️ Hesapla</button>
+      <div class="terminal" id="t-sub-out"></div>
+    `
+  },
+  {
+    id:'regex', title:'Regex Test Aracı',
+    desc:'Düzenli ifade test et, eşleşmeleri bul',
+    html:`
+      <input class="inp" id="t-rgx-pat" placeholder="Regex: ör: \\d{3}-\\d{4}"/>
+      <input class="inp" id="t-rgx-flg" placeholder="Flag: g, i, m (ör: gi)"/>
+      <textarea class="inp" id="t-rgx-txt" style="min-height:70px" placeholder="Test metni..."></textarea>
+      <button class="btn btn-tool btn-sm" onclick="doRegex()">⚙️ Test Et</button>
+      <div class="terminal" id="t-rgx-out"></div>
+    `
+  },
+  {
+    id:'portref', title:'Port Referansı',
+    desc:'Bilinen portlar ve servisleri ara',
+    html:`
+      <input class="inp" id="t-port-in" placeholder="Port no veya servis adı ara... (ör: 22, http, ftp)"/>
+      <button class="btn btn-tool btn-sm" onclick="doPortRef()">🔍 Ara</button>
+      <div class="terminal" id="t-port-out"></div>
+    `
+  },
+  {
+    id:'crypto', title:'Metin Şifreleme (AES)',
+    desc:'AES-GCM ile şifrele / deşifre et',
+    html:`
+      <textarea class="inp" id="t-cry-txt" style="min-height:60px" placeholder="Metin veya şifreli veri..."></textarea>
+      <input class="inp" type="password" id="t-cry-pass" placeholder="🔑 Şifre"/>
+      <div class="row">
+        <button class="btn btn-tool btn-sm" onclick="doAESEncrypt()">🔒 Şifrele</button>
+        <button class="btn btn-sm" onclick="doAESDecrypt()">🔓 Deşifre</button>
+      </div>
+      <div class="terminal" id="t-cry-out"></div>
+    `
+  },
+  {
+    id:'pwgen', title:'Güçlü Şifre Üretici',
+    desc:'Kriptografik olarak güvenli rastgele şifre',
+    html:`
+      <div class="row" style="margin-bottom:10px">
+        <span style="font-size:11px;color:var(--text2)">Uzunluk:</span>
+        <input type="range" id="t-pw-len" min="8" max="64" value="20" style="flex:1" oninput="$('t-pw-lv').textContent=this.value"/>
+        <span id="t-pw-lv" style="font-size:11px;color:var(--g1);min-width:20px">20</span>
+      </div>
+      <div class="row" style="margin-bottom:10px;gap:12px">
+        <label style="font-size:11px;color:var(--text2)"><input type="checkbox" id="pw-up" checked> Büyük harf</label>
+        <label style="font-size:11px;color:var(--text2)"><input type="checkbox" id="pw-num" checked> Sayı</label>
+        <label style="font-size:11px;color:var(--text2)"><input type="checkbox" id="pw-sym" checked> Sembol</label>
+      </div>
+      <button class="btn btn-tool btn-sm" onclick="doGenPW()">⚡ Üret</button>
+      <div class="terminal" id="t-pw-out"></div>
+    `
+  },
+  {
+    id:'ipinfo', title:'IP Analiz Aracı',
+    desc:'IP adresini analiz et (yerel bilgi)',
+    html:`
+      <input class="inp" id="t-ip-in" placeholder="ör: 192.168.1.1 / 10.0.0.0/8"/>
+      <button class="btn btn-tool btn-sm" onclick="doIPInfo()">🔍 Analiz Et</button>
+      <div class="terminal" id="t-ip-out"></div>
+    `
+  },
+  {
+    id:'cveref', title:'Güvenlik Açığı Referansı',
+    desc:'Yaygın güvenlik açıkları hakkında bilgi',
+    html:`
+      <input class="inp" id="t-cve-in" placeholder="Ara: sql injection, xss, buffer overflow..."/>
+      <button class="btn btn-tool btn-sm" onclick="doCVERef()">🔍 Ara</button>
+      <div class="terminal" id="t-cve-out"></div>
+    `
+  },
+  {
+    id:'diffie', title:'Diffie-Hellman Demo',
+    desc:'DH anahtar değişimi simülasyonu',
+    html:`
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Alice ve Bob, şifresiz kanal üzerinden gizli anahtar oluşturuyor</div>
+      <button class="btn btn-tool btn-sm" onclick="doDH()">⚡ Simüle Et</button>
+      <div class="terminal" id="t-dh-out"></div>
+    `
+  },
+];
+
+/* ══════════════════════════════════════════════
+   ETİK TÜZÜK İÇERİĞİ
+   ══════════════════════════════════════════════ */
+const ETHICS_CODE=[
+  {icon:'🛡️',title:'Zarar Vermeme',text:'Hiçbir zaman izinsiz sisteme girme. Saldırı değil, savunma. Kırmak için değil, anlamak için.'},
+  {icon:'🔍',title:'Şeffaflık',text:'Bulgularını etik biçimde raporla. Sessiz kalmak suç ortaklığıdır.'},
+  {icon:'⚖️',title:'Hukuki Çerçeve',text:"Çalıştığın ülkenin ve hedefin ülkesinin yasalarını bil ve ona göre hareket et."},
+  {icon:'🌍',title:'Topluma Fayda',text:'Bilgin toplumu güçlendirmeli, zayıflatmamalı.'},
+  {icon:'🤝',title:'Sorumlu İfşa',text:'Açık gördüğün zafiyeti önce ilgili tarafa bildir. Yayımlamak son çaredir.'},
+  {icon:'📚',title:'Sürekli Öğrenme',text:"Teknoloji değişir, tehditler değişir. Durmanın yolu geriden gelmektir."},
+  {icon:'🔒',title:'Mahremiyet',text:"Başkasının verisine izinsiz dokunma. Veri bir kişiyi temsil eder."},
+  {icon:'💡',title:'Açık Bilgi',text:"Öğrendiklerini paylaş. Bilgi saklandığında küçülür, paylaşıldığında büyür."},
+];
+
+/* ════════════════════════════════════════
+   UYGULAMA BAŞLATMA
+   ════════════════════════════════════════ */
+function init(){
+  S.theme=ls('theme')||'dark';
+  S.forum=ls('forum')||defaultForum();
+  S.notes=ls('notes')||[];
+  S.files=ls('files')||[];
+  S.favs=ls('favs')||[];
+  S.progress=ls('progress')||{};
+  S.profile=ls('profile');
+  applyTheme();
+  if(S.profile){$('setup-modal').classList.add('hidden');renderProfile()}
+  S.quoteIdx=Math.floor(Math.random()*QUOTES.length);
+  // Anasayfa
+  renderHero();
+  renderPrinciples();
+  // Alanlar
+  renderFields();
+  // Araçlar
+  renderTools();
+  // Forum
+  renderForum();
+  // Notlar
+  renderNotes();
+  // Dosyalar
+  renderFiles();
+  // Favoriler
+  renderFavs();
+  // İlerleme
+  renderProgress();
+  // Etik tüzük
+  renderEthicsPage();
+  // Matrix rain başlat
+  startMatrix();
+  // Etik söz rotasyonu
+  setInterval(()=>{S.quoteIdx=(S.quoteIdx+1)%QUOTES.length},12000);
+}
+
+/* ════════════════════════════════════════
+   MATRIX RAIN
+   ════════════════════════════════════════ */
+function startMatrix(){
+  const c=$('matrix-canvas');
+  const ctx=c.getContext('2d');
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight}
+  resize();window.addEventListener('resize',resize);
+  const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()アイウエオカキクケコ';
+  const fs=14;let cols=Math.floor(c.width/fs);
+  let drops=Array(cols).fill(1);
+  setInterval(()=>{
+    ctx.fillStyle='rgba(3,5,8,0.05)';ctx.fillRect(0,0,c.width,c.height);
+    ctx.fillStyle='#00ff88';ctx.font=fs+'px JetBrains Mono';
+    drops.forEach((y,i)=>{
+      ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*fs,y*fs);
+      if(y*fs>c.height&&Math.random()>0.975)drops[i]=0;
+      drops[i]++;
+    });
+  },50);
+}
+
+/* ════════════════════════════════════════
+   NAV — Panel geçişi
+   ════════════════════════════════════════ */
+function nav(id,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
+  $('panel-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  if(id==='progress')renderProgress();
+  if(id==='favorites')renderFavs();
+}
+
+/* ════════════════════════════════════════
+   TEMA & GİZLİLİK
+   ════════════════════════════════════════ */
+function toggleTheme(){
+  S.theme=S.theme==='dark'?'light':'dark';
+  applyTheme();ls('theme',S.theme);
+}
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme',S.theme);
+  $('theme-btn').textContent=S.theme==='dark'?'☀️ Light':'🌙 Dark';
+}
+function togglePrivacy(){
+  S.privacy=!S.privacy;
+  $('priv-bar').className=S.privacy?'on':'';
+  $('priv-btn').style.color=S.privacy?'var(--g3)':'';
+  $('priv-btn').style.borderColor=S.privacy?'var(--g3)':'';
+  toast(S.privacy?'🔒 Gizlilik modu ON — hiçbir şey kaydedilmiyor':'🔓 Gizlilik modu OFF',S.privacy?'err':'inf');
+}
+
+/* ════════════════════════════════════════
+   PROFİL
+   ════════════════════════════════════════ */
+function doSetup(){
+  const name=($('s-name').value.trim()||'Ghost_'+Math.floor(Math.random()*9999));
+  const emoji=$('s-emoji').value.trim()||'⚡';
+  const role=$('s-role').value;
+  S.profile={name,emoji,role,badges:[role,'Yeni Üye'],joined:new Date().toLocaleDateString('tr-TR')};
+  ls('profile',S.profile);
+  $('setup-modal').classList.add('hidden');
+  renderProfile();
+  toast('⚡ Hoş geldin, '+name+'!','ok');
+}
+function renderProfile(){
+  if(!S.profile)return;
+  $('profile-hdr-btn').textContent=S.profile.emoji+' '+S.profile.name;
+  checkBadges();
+}
+function checkBadges(){
+  if(!S.profile)return;
+  const b=new Set(S.profile.badges||[]);
+  if(S.favs.length>=5)b.add('Koleksiyoncu');
+  if(S.notes.length>=3)b.add('Not Ustası');
+  if(S.files.length>=2)b.add('Arşivci');
+  const done=Object.values(S.progress).reduce((a,f)=>a+Object.values(f).filter(Boolean).length,0);
+  if(done>=10)b.add('Bilgi Kaşifi');
+  if(done>=50)b.add('Usta');
+  S.profile.badges=[...b];
+  ls('profile',S.profile);
+}
+
+/* ════════════════════════════════════════
+   ANASAYFA
+   ════════════════════════════════════════ */
+function renderHero(){
+  const totalTopics=FIELDS.reduce((a,f)=>a+f.topics.length,0);
+  const done=Object.values(S.progress).reduce((a,f)=>a+Object.values(f).filter(Boolean).length,0);
+  $('hero-stats').innerHTML=`
+    <div class="h-stat"><div class="h-stat-n">${FIELDS.length}</div><div class="h-stat-l">Bilgi Alanı</div></div>
+    <div class="h-stat"><div class="h-stat-n">${totalTopics}</div><div class="h-stat-l">Konu</div></div>
+    <div class="h-stat"><div class="h-stat-n">${TOOLS.length}</div><div class="h-stat-l">Etik Araç</div></div>
+    <div class="h-stat"><div class="h-stat-n">${done}</div><div class="h-stat-l">Tamamlanan</div></div>
+    <div class="h-stat"><div class="h-stat-n">∞</div><div class="h-stat-l">Merak</div></div>
+  `;
+}
+function renderPrinciples(){
+  $('principles-grid').innerHTML=ETHICS_CODE.map(e=>`
+    <div class="principle-card">
+      <div class="pc-icon">${e.icon}</div>
+      <div class="pc-title">${e.title}</div>
+      <div class="pc-text">${e.text}</div>
+    </div>
+  `).join('');
+}
+
+/* ════════════════════════════════════════
+   BİLGİ ALANLARI
+   ════════════════════════════════════════ */
+let currentField=null;
+function renderFields(filter=''){
+  const g=$('fields-grid');
+  g.innerHTML='';
+  FIELDS.filter(f=>!filter||f.name.toLowerCase().includes(filter)||f.topics.some(t=>t.toLowerCase().includes(filter))).forEach(field=>{
+    const prog=S.progress[field.id]||{};
+    const done=Object.values(prog).filter(Boolean).length;
+    const pct=Math.round(done/field.topics.length*100);
+    const d=document.createElement('div');
+    d.className='field-card'+(currentField&&currentField.id===field.id?' selected':'');
+    d.innerHTML=`
+      <div class="field-icon">${field.icon}</div>
+      <div class="field-name">${field.name}</div>
+      <div class="field-sub">${done}/${field.topics.length} konu</div>
+      <div class="field-prog"><div class="field-prog-fill" style="width:${pct}%"></div></div>
+    `;
+    d.addEventListener('click',()=>selectField(field));
+    g.appendChild(d);
+  });
+}
+function filterFields(){renderFields($('field-search').value.toLowerCase())}
+function selectField(field){
+  currentField=field;
+  renderFields($('field-search').value.toLowerCase());
+  $('topics-section').style.display='block';
+  $('topics-title').textContent=field.icon+' '+field.name;
+  renderTopics(field);
+  $('topics-section').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function closeTopic(){$('topics-section').style.display='none';currentField=null;renderFields()}
+function renderTopics(field){
+  const prog=S.progress[field.id]||{};
+  $('topics-list').innerHTML=field.topics.map((t,i)=>{
+    const done=!!prog[t];
+    return`<div class="topic-row${done?' done':''}" onclick="openLesson('${field.id}','${t.replace(/'/g,"\\'")}')">
+      <div class="topic-check">${done?'✓':''}</div>
+      <span style="flex:1;font-size:12px">${i+1}. ${t}</span>
+      <button class="btn btn-sm" onclick="event.stopPropagation();toggleTopic('${field.id}','${t.replace(/'/g,"\\'")}',this)" style="${done?'border-color:var(--g1);color:var(--g1)':''}">${done?'✓ Tamam':'Başla'}</button>
+    </div>`;
+  }).join('');
+}
+function toggleTopic(fid,topic){
+  if(!S.progress[fid])S.progress[fid]={};
+  S.progress[fid][topic]=!S.progress[fid][topic];
+  ls('progress',S.progress);
+  renderTopics(FIELDS.find(f=>f.id===fid));
+  renderFields($('field-search').value.toLowerCase());
+  toast(S.progress[fid][topic]?'✅ Tamamlandı!':'↩️ Geri alındı','ok');
+}
+function resetFieldProgress(){
+  if(!currentField)return;
+  if(!confirm(currentField.name+' ilerlemenizi sıfırlansın mı?'))return;
+  S.progress[currentField.id]={};
+  ls('progress',S.progress);
+  renderTopics(currentField);
+  renderFields();
+  toast('↺ '+currentField.name+' sıfırlandı','inf');
+}
+
+/* ════════════════════════════════════════
+   KONU ANLATIMI — Yapay içerik üretici
+   Her konu için zengin eğitim içeriği
+   ════════════════════════════════════════ */
+const LESSON_TEMPLATES={
+  'Ağ Güvenliğine Giriş':{
+    intro:`Ağ güvenliği, bir bilgisayar ağını yetkisiz erişimden, kötüye kullanımdan ve saldırılardan koruma bilimidir. Modern dijital dünyada her cihaz bir ağa bağlı; bu da ağ güvenliğini en kritik konulardan biri yapıyor.`,
+    sections:[
+      {title:'Neden Ağ Güvenliği?',content:`Her gün milyonlarca siber saldırı gerçekleşiyor. Saldırıların çoğu ağ zafiyetlerinden yararlanıyor. Etik bir hacker, bu saldırıları anlamadan savunma yapamaz.`},
+      {title:'Temel Kavramlar',content:`<ul><li><code>Confidentiality</code> — Gizlilik: Veriye yalnızca yetkililer erişebilmeli</li><li><code>Integrity</code> — Bütünlük: Veri değiştirilmeden iletilmeli</li><li><code>Availability</code> — Erişilebilirlik: Sistem her zaman çalışır durumda olmalı</li></ul>Bu üçlüye <strong>CIA Triad</strong> denir.`},
+      {title:'Saldırı Türleri',content:`<ul><li><strong>Pasif Saldırılar:</strong> Dinleme (sniffing), trafik analizi</li><li><strong>Aktif Saldırılar:</strong> Veri değiştirme, DOS, MITM</li><li><strong>İçeriden Saldırılar:</strong> Yetkili kullanıcının kötüye kullanımı</li><li><strong>Dışarıdan Saldırılar:</strong> Güvenlik duvarı dışından</li></ul>`},
+    ],
+    code:`# Ağ trafiği dinleme örneği (kendi ağında, yasal kullanım)
+# Wireshark CLI — tcpdump
+tcpdump -i eth0 -n
+# Belirli portu filtrele
+tcpdump -i eth0 port 80 -w capture.pcap`,
+    callouts:[
+      {type:'warn',text:'⚠️ Yalnızca kendi ağında veya yazılı izin aldığın sistemlerde kullan.'},
+      {type:'success',text:'✅ Bu konuyu öğrendikten sonra OSI Modeli ve TCP/IP konularına geç.'},
+    ]
+  },
+  'Kriptografi 101':{
+    intro:`Kriptografi, iletişimi yetkisiz erişime karşı koruma bilimidir. Binlerce yıllık geçmişiyle bugün dijital güvenliğin temel taşıdır.`,
+    sections:[
+      {title:'Tarihçe',content:`Sezar şifresi (MÖ 50), Vigenère şifresi (16. yy), Enigma (2. Dünya Savaşı), modern RSA (1977)...`},
+      {title:'Temel Kavramlar',content:`<ul><li><code>Plaintext</code> — Açık metin</li><li><code>Ciphertext</code> — Şifreli metin</li><li><code>Key</code> — Anahtar</li><li><code>Encryption</code> — Şifreleme</li><li><code>Decryption</code> — Şifre çözme</li></ul>`},
+      {title:'Şifreleme Türleri',content:`<ul><li><strong>Simetrik:</strong> Aynı anahtar şifreler ve çözer (AES, DES)</li><li><strong>Asimetrik:</strong> Public/Private key çifti (RSA, ECC)</li><li><strong>Hash:</strong> Tek yönlü (SHA-256, MD5)</li></ul>`},
+    ],
+    code:`# Python ile basit Caesar cipher
+def caesar(text, shift):
+    result = ""
+    for char in text:
+        if char.isalpha():
+            shifted = ord(char) + shift
+            if char.isupper():
+                result += chr((shifted - 65) % 26 + 65)
+            else:
+                result += chr((shifted - 97) % 26 + 97)
+        else:
+            result += char
+    return result
+
+print(caesar("HELLO WORLD", 3))  # KHOOR ZRUOG`,
+    callouts:[
+      {type:'info',text:'ℹ️ Modern sistemler asla Caesar gibi basit şifreler kullanmaz. Bu sadece temelleri anlamak için.'},
+    ]
+  },
+  'Atom Çekirdeği Yapısı':{
+    intro:`Atom çekirdeği, atomun merkezinde bulunan, proton ve nötronlardan (nükleonlar) oluşan yoğun yapıdır. Çekirdeğin boyutu, atomun boyutunun yaklaşık 1/10.000'i kadar küçüktür.`,
+    sections:[
+      {title:'Proton ve Nötronlar',content:`<ul><li><strong>Proton:</strong> +1 elektrik yükü, 1.673×10⁻²⁷ kg, kuvark yapısı (uud)</li><li><strong>Nötron:</strong> Yüksüz, 1.675×10⁻²⁷ kg, kuvark yapısı (udd)</li><li><strong>Nükleon sayısı = Kütle sayısı (A)</strong></li></ul>`},
+      {title:'Nükleer Kuvvetler',content:`Protonlar arasındaki elektrostatik itme kuvvetine karşın çekirdek nasıl bir arada duruyor? Cevap: <strong>Güçlü Nükleer Kuvvet</strong>. Bu kuvvet, elektromanyetik kuvvetten ~100 kat daha güçlüdür ama çok kısa menzillidir.`},
+      {title:'Nükleer Bağlanma Enerjisi',content:`Her çekirdekte, serbest nükleonların toplam kütlesinden daha az kütle vardır. Bu fark, Einstein'ın E=mc² formülüyle enerjiye dönüşmüştür. Bu enerjiye <strong>bağlanma enerjisi</strong> denir.`},
+    ],
+    code:`# Basit bağlanma enerjisi hesabı
+# Einstein E = Δm × c²
+c = 3e8  # m/s
+mp = 1.6726e-27  # proton kütlesi (kg)
+mn = 1.6749e-27  # nötron kütlesi (kg)
+u = 1.6605e-27   # atomik kütle birimi
+
+# Helyum-4 için (2p + 2n)
+Z, N = 2, 2
+mass_nucleus = 4.002602 * u  # gerçek ölçüm
+mass_free = Z*mp + N*mn
+delta_m = mass_free - mass_nucleus
+E_bind = delta_m * c**2
+print(f"Bağlanma enerjisi: {E_bind:.4e} J")
+print(f"  = {E_bind/1.602e-13:.2f} MeV")`,
+    callouts:[
+      {type:'info',text:'ℹ️ Helyum-4\'ün bağlanma enerjisi yaklaşık 28.3 MeV\'dir.'},
+      {type:'warn',text:'⚠️ Nükleer bilgi paylaşımında her zaman etik ve yasal sınırları göz önünde bulundur.'},
+    ]
+  },
+};
+
+// Genel şablon — özelleştirilmemiş konular için
+function buildGenericLesson(fieldId, topic){
+  const field=FIELDS.find(f=>f.id===fieldId);
+  return{
+    intro:`${topic} konusuna hoş geldin! Bu konu, ${field?field.name:''} alanının temel taşlarından birini oluşturuyor. Aşağıdaki içerik sana sıfırdan başlamak için gereken temel bilgileri sunuyor.`,
+    sections:[
+      {title:'Neden Bu Konu Önemli?',content:`${topic}, modern bilim ve teknolojide kritik bir rol oynar. Bu alandaki yetkinlik, hem teorik hem de pratik açıdan büyük fırsatlar sunar.`},
+      {title:'Temel Kavramlar',content:`Bu konuyu öğrenmek için şu adımları izle:<ul>
+        <li>Temel tanımları ve terminolojiyi öğren</li>
+        <li>Geçmiş literatürü ve kaynak çalışmaları incele</li>
+        <li>Pratik uygulamalarla pekiştir</li>
+        <li>İleri konulara geçmeden önce temel sınavlarını geç</li>
+      </ul>`},
+      {title:'Önerilen Kaynaklar',content:`<ul>
+        <li>Wikipedia — Temel kavramlar için</li>
+        <li>Khan Academy — Görsel öğrenme</li>
+        <li>MIT OpenCourseWare — Üniversite düzeyi</li>
+        <li>arXiv.org — Akademik makaleler</li>
+        <li>YouTube — 3Blue1Brown, Veritasium, SciShow</li>
+      </ul>`},
+    ],
+    code:`# Bu konuyu araştırmak için
+# Tavsiye edilen arama terimleri:
+query1 = "${topic} introduction tutorial"
+query2 = "${topic} fundamentals explained"
+query3 = "${topic} ${field?field.name:''} basics"
+# arXiv araması:
+arxiv = "https://arxiv.org/search/?query=${encodeURIComponent(topic)}"`,
+    callouts:[
+      {type:'info',text:`ℹ️ Bu konu için internet'te "${topic} nedir" şeklinde Türkçe, "${topic} explained" şeklinde İngilizce arama yapabilirsin.`},
+      {type:'success',text:`✅ Konuyu bitirince "Tamamladım" butonuna bas ve bir sonraki konuya geç!`},
+    ]
+  };
+}
+
+function openLesson(fieldId, topic){
+  currentLesson={fieldId,topic};
+  const field=FIELDS.find(f=>f.id===fieldId);
+  const lesson=LESSON_TEMPLATES[topic]||buildGenericLesson(fieldId,topic);
+  $('lesson-title').textContent=topic;
+  $('lesson-field').textContent=(field?field.icon+' '+field.name:'')+ ' — Konu Anlatımı';
+  let html=`<p>${lesson.intro}</p>`;
+  lesson.sections.forEach(s=>{
+    html+=`<h2>${s.title}</h2><div>${s.content}</div>`;
+  });
+  if(lesson.code){
+    html+=`<h2>Örnek Kod / Formül</h2><pre>${esc(lesson.code)}</pre>`;
+  }
+  lesson.callouts?.forEach(c=>{
+    html+=`<div class="lesson-callout ${c.type}"><p>${c.text}</p></div>`;
+  });
+  $('lesson-body').innerHTML=html;
+  $('lesson-overlay').classList.add('open');
+}
+function closeLesson(){$('lesson-overlay').classList.remove('open')}
+function toggleLessonDone(){
+  if(!currentLesson.fieldId||!currentLesson.topic)return;
+  toggleTopic(currentLesson.fieldId,currentLesson.topic);
+}
+
+/* ════════════════════════════════════════
+   ETİK ARAÇLAR
+   ════════════════════════════════════════ */
+function renderTools(){
+  $('tools-container').innerHTML=TOOLS.map(t=>`
+    <div class="tool-card">
+      <div class="tool-title">${t.title}</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:12px">${t.desc}</div>
+      ${t.html}
+    </div>
+  `).join('');
+}
+
+// HASH
+async function doHash(){
+  const txt=$('t-hash-in').value;
+  if(!txt)return toast('Metin gir!','err');
+  const alg=$('t-hash-alg').value;
+  const out=$('t-hash-out');
+  out.style.display='block';
+  try{
+    const buf=await crypto.subtle.digest(alg,new TextEncoder().encode(txt));
+    const hex=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    out.innerHTML=`<span class="t-info">// Algoritma: ${alg}</span>\n<span class="t-ok">${hex}</span>\n<span class="t-info">// Uzunluk: ${hex.length/2} byte (${hex.length} hex karakter)</span>`;
+  }catch(e){out.innerHTML=`<span class="t-err">Hata: ${e.message}</span>`}
+}
+
+// ENCODE / DECODE
+function doEncode(){
+  const txt=$('t-enc-in').value;
+  const type=$('t-enc-type').value;
+  const out=$('t-enc-out');
+  out.style.display='block';
+  let result='';
+  try{
+    switch(type){
+      case'b64e':result=btoa(unescape(encodeURIComponent(txt)));break;
+      case'b64d':result=decodeURIComponent(escape(atob(txt)));break;
+      case'urle':result=encodeURIComponent(txt);break;
+      case'urld':result=decodeURIComponent(txt);break;
+      case'hxe':result=Array.from(new TextEncoder().encode(txt)).map(b=>b.toString(16).padStart(2,'0')).join('');break;
+      case'hxd':result=new TextDecoder().decode(new Uint8Array(txt.match(/.{1,2}/g).map(b=>parseInt(b,16))));break;
+      case'rote':result=txt.replace(/[a-zA-Z]/g,c=>{const b=c<='Z'?65:97;return String.fromCharCode((c.charCodeAt(0)-b+13)%26+b)});break;
+      case'bine':result=Array.from(new TextEncoder().encode(txt)).map(b=>b.toString(2).padStart(8,'0')).join(' ');break;
+      case'bind':result=new TextDecoder().decode(new Uint8Array(txt.trim().split(/\s+/).map(b=>parseInt(b,2))));break;
+    }
+    out.innerHTML=`<span class="t-info">// ${type.toUpperCase()}</span>\n<span class="t-ok">${esc(result)}</span>`;
+  }catch(e){out.innerHTML=`<span class="t-err">Hata: ${e.message}</span>`}
+}
+
+// SUBNET
+function doSubnet(){
+  const inp=$('t-sub-in').value.trim();
+  const out=$('t-sub-out');
+  out.style.display='block';
+  const m=inp.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)\/(\d+)$/);
+  if(!m){out.innerHTML='<span class="t-err">Geçersiz format. ör: 192.168.1.0/24</span>';return}
+  const [,a,b,c,d,cidr]=[...m].map(Number);
+  const mask=cidr===0?0:(~0<<(32-cidr))>>>0;
+  const ip=(a<<24|b<<16|c<<8|d)>>>0;
+  const net=ip&mask;const bcast=net|(~mask>>>0);
+  const hosts=cidr>=31?cidr===31?2:1:bcast-net-1;
+  const toIP=n=>[(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join('.');
+  out.innerHTML=[
+    `<span class="t-info">// Subnet Analizi: ${inp}</span>`,
+    `<span class="t-ok">Network      : ${toIP(net)}</span>`,
+    `<span class="t-ok">Broadcast    : ${toIP(bcast)}</span>`,
+    `<span class="t-ok">İlk Host     : ${toIP(net+1)}</span>`,
+    `<span class="t-ok">Son Host     : ${toIP(bcast-1)}</span>`,
+    `<span class="t-ok">Subnet Mask  : ${toIP(mask)}</span>`,
+    `<span class="t-ok">Kullanılabilir Host: ${hosts.toLocaleString()}</span>`,
+    `<span class="t-info">CIDR: /${cidr} — /${33-cidr-1} alt ağ bölünebilir</span>`,
+  ].join('\n');
+}
+
+// REGEX
+function doRegex(){
+  const pat=$('t-rgx-pat').value;const flg=$('t-rgx-flg').value||'g';
+  const txt=$('t-rgx-txt').value;const out=$('t-rgx-out');
+  out.style.display='block';
+  if(!pat||!txt){out.innerHTML='<span class="t-err">Pattern ve metin gerekli!</span>';return}
+  try{
+    const rx=new RegExp(pat,flg);
+    const matches=[...txt.matchAll(new RegExp(pat,'g'))];
+    if(matches.length===0){out.innerHTML='<span class="t-warn">Eşleşme bulunamadı.</span>';return}
+    out.innerHTML=`<span class="t-info">// ${matches.length} eşleşme bulundu</span>\n`+
+      matches.map((m,i)=>`<span class="t-ok">[${i+1}] "${esc(m[0])}" — index:${m.index}</span>`).join('\n');
+  }catch(e){out.innerHTML=`<span class="t-err">Regex hatası: ${e.message}</span>`}
+}
+
+// PORT REFERANSI
+const PORT_DB={
+  21:'FTP — Dosya Transfer Protokolü',22:'SSH — Güvenli Kabuk',23:'Telnet — Güvensiz uzak bağlantı',
+  25:'SMTP — E-posta gönderme',53:'DNS — Domain Name System',80:'HTTP — Web',
+  110:'POP3 — E-posta alma',143:'IMAP — E-posta erişim',443:'HTTPS — Güvenli web',
+  445:'SMB — Windows dosya paylaşımı',993:'IMAPS — Güvenli IMAP',995:'POP3S — Güvenli POP3',
+  1433:'MSSQL — Microsoft SQL Server',1521:'Oracle DB',3306:'MySQL/MariaDB',
+  3389:'RDP — Uzak Masaüstü',4444:'Metasploit varsayılan dinleme portu',
+  5432:'PostgreSQL',5900:'VNC — Uzak masaüstü',6379:'Redis',
+  8080:'HTTP Alternatif / Proxy',8443:'HTTPS Alternatif',27017:'MongoDB',
+};
+function doPortRef(){
+  const q=$('t-port-in').value.toLowerCase().trim();
+  const out=$('t-port-out');out.style.display='block';
+  if(!q){out.innerHTML='<span class="t-err">Port no veya servis adı gir!</span>';return}
+  const num=parseInt(q);
+  let results=[];
+  if(!isNaN(num)){
+    if(PORT_DB[num])results.push(`<span class="t-ok">Port ${num}: ${PORT_DB[num]}</span>`);
+    else results.push(`<span class="t-warn">Port ${num}: Yaygın hizmet bulunamadı</span>`);
+  }
+  Object.entries(PORT_DB).filter(([p,s])=>s.toLowerCase().includes(q)).forEach(([p,s])=>{
+    if(!results.some(r=>r.includes(`Port ${p}`)))
+      results.push(`<span class="t-ok">Port ${p}: ${s}</span>`);
+  });
+  out.innerHTML=results.length?results.join('\n'):`<span class="t-warn">"${q}" için sonuç bulunamadı.</span>`;
+}
+
+// AES şifreleme (araç paneli için)
+async function doAESEncrypt(){
+  const txt=$('t-cry-txt').value;const pass=$('t-cry-pass').value;
+  const out=$('t-cry-out');out.style.display='block';
+  if(!txt||!pass){out.innerHTML='<span class="t-err">Metin ve şifre gerekli!</span>';return}
+  try{
+    const enc=await encryptAES(txt,pass);
+    out.innerHTML=`<span class="t-info">// AES-GCM Şifreli (kopyala)</span>\n<span class="t-ok">${enc}</span>`;
+  }catch(e){out.innerHTML=`<span class="t-err">Hata: ${e.message}</span>`}
+}
+async function doAESDecrypt(){
+  const b64=$('t-cry-txt').value.trim();const pass=$('t-cry-pass').value;
+  const out=$('t-cry-out');out.style.display='block';
+  if(!b64||!pass){out.innerHTML='<span class="t-err">Şifreli metin ve şifre gerekli!</span>';return}
+  try{
+    const dec=await decryptAES(b64,pass);
+    out.innerHTML=`<span class="t-info">// Deşifreli</span>\n<span class="t-ok">${esc(dec)}</span>`;
+  }catch(e){out.innerHTML=`<span class="t-err">❌ Yanlış şifre veya bozuk veri!</span>`}
+}
+
+// ŞİFRE ÜRETİCİ
+function doGenPW(){
+  const len=parseInt($('t-pw-len').value);
+  const up=$('pw-up').checked;const num=$('pw-num').checked;const sym=$('pw-sym').checked;
+  let chars='abcdefghijklmnopqrstuvwxyz';
+  if(up)chars+='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if(num)chars+='0123456789';
+  if(sym)chars+='!@#$%^&*()_+-=[]{}|;:,.<>?';
+  const arr=new Uint32Array(len);crypto.getRandomValues(arr);
+  const pw=Array.from(arr).map(v=>chars[v%chars.length]).join('');
+  const out=$('t-pw-out');out.style.display='block';
+  const entropy=Math.floor(len*Math.log2(chars.length));
+  out.innerHTML=`<span class="t-ok">${pw}</span>\n<span class="t-info">// Uzunluk: ${len} · Karakter seti: ${chars.length} · Entropi: ~${entropy} bit</span>\n<span class="t-info">${entropy>=128?'✅ Çok güvenli':entropy>=80?'⚠️ Yeterli':'❌ Yetersiz'}</span>`;
+}
+
+// IP ANALİZ
+function doIPInfo(){
+  const ip=$('t-ip-in').value.trim();
+  const out=$('t-ip-out');out.style.display='block';
+  const m=ip.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)/);
+  if(!m){out.innerHTML='<span class="t-err">Geçerli bir IP gir!</span>';return}
+  const [,a,b,c,d]=[...m].map(Number);
+  if([a,b,c,d].some(x=>x>255)){out.innerHTML='<span class="t-err">Geçersiz IP aralığı!</span>';return}
+  let type='Genel (Public)';
+  if(a===10)type='Özel (RFC1918: 10.0.0.0/8)';
+  else if(a===172&&b>=16&&b<=31)type='Özel (RFC1918: 172.16.0.0/12)';
+  else if(a===192&&b===168)type='Özel (RFC1918: 192.168.0.0/16)';
+  else if(a===127)type='Loopback (localhost)';
+  else if(a===169&&b===254)type='Link-Local (APIPA)';
+  else if(a>=224&&a<=239)type='Multicast';
+  else if(a>=240)type='Ayrılmış';
+  const binary=[a,b,c,d].map(x=>x.toString(2).padStart(8,'0')).join('.');
+  const hex=[a,b,c,d].map(x=>x.toString(16).padStart(2,'0')).join(':');
+  out.innerHTML=[
+    `<span class="t-info">// IP Analizi: ${ip}</span>`,
+    `<span class="t-ok">Tür         : ${type}</span>`,
+    `<span class="t-ok">Binary      : ${binary}</span>`,
+    `<span class="t-ok">Hex         : ${hex.toUpperCase()}</span>`,
+    `<span class="t-ok">Decimal     : ${(a*16777216+b*65536+c*256+d)}</span>`,
+    `<span class="t-info">// Sınıf: ${a<128?'A (0-127)':a<192?'B (128-191)':'C veya üstü (192+)'}</span>`,
+  ].join('\n');
+}
+
+// CVE REFERANS
+const CVE_DB={
+  'sql injection':{name:'SQL Injection (SQLi)',sev:'YÜKSEK',desc:'Kullanıcı girdisinin SQL sorgusuna doğrudan eklenmesi. Veritabanına yetkisiz erişim sağlar.',fix:'Prepared statements, parameterized queries kullan.',ref:'OWASP A03:2021'},
+  'xss':{name:'Cross-Site Scripting (XSS)',sev:'YÜKSEK',desc:'Kötü niyetli script\'in web sayfasına enjekte edilmesi. Kullanıcı tarayıcısında çalışır.',fix:'Output encoding, CSP header, innerHTML yerine textContent kullan.',ref:'OWASP A03:2021'},
+  'buffer overflow':{name:'Buffer Overflow',sev:'KRİTİK',desc:'Bellek arabelleğinin sınırını aşarak bitişik bellek alanlarının üzerine yazma.',fix:'Güvenli dil kullan, bounds checking uygula, ASLR/DEP etkinleştir.',ref:'CWE-121/122'},
+  'csrf':{name:'Cross-Site Request Forgery (CSRF)',sev:'ORTA',desc:'Kullanıcının tarayıcısını kullanarak istemediği işlem yaptırma.',fix:'CSRF token kullan, SameSite cookie politikası uygula.',ref:'OWASP A01:2021'},
+  'lfi':{name:'Local File Inclusion (LFI)',sev:'YÜKSEK',desc:'Sunucudaki yerel dosyaları okuma zafiyeti.',fix:'Dosya yolu doğrulama, whitelist kullan.',ref:'CWE-98'},
+  'ssrf':{name:'Server-Side Request Forgery (SSRF)',sev:'YÜKSEK',desc:'Sunucunun kendi ağındaki kaynaklara istek yapmasını sağlama.',fix:'URL doğrulama, iç ağa erişimi kısıtla.',ref:'OWASP A10:2021'},
+  'xxe':{name:'XML External Entity (XXE)',sev:'YÜKSEK',desc:'XML ayrıştırıcının dış varlık referanslarını işlemesi.',fix:'Dış varlık işlemeyi devre dışı bırak.',ref:'OWASP A05:2021'},
+  'rce':{name:'Remote Code Execution (RCE)',sev:'KRİTİK',desc:'Saldırganın uzaktan sunucuda kod çalıştırması.',fix:'Giriş doğrulama, en az yetki prensibi, patch yönetimi.',ref:'CWE-78/94'},
+};
+function doCVERef(){
+  const q=$('t-cve-in').value.toLowerCase().trim();
+  const out=$('t-cve-out');out.style.display='block';
+  if(!q){out.innerHTML='<span class="t-err">Arama terimi gir!</span>';return}
+  const found=Object.entries(CVE_DB).filter(([k,v])=>k.includes(q)||v.name.toLowerCase().includes(q));
+  if(!found.length){out.innerHTML=`<span class="t-warn">"${q}" için sonuç bulunamadı.</span>`;return}
+  out.innerHTML=found.map(([k,v])=>`<span class="t-info">// ${v.name}</span>
+<span class="t-warn">Şiddet: ${v.sev}</span>
+<span class="t-ok">Açıklama: ${v.desc}</span>
+<span class="t-ok">Çözüm: ${v.fix}</span>
+<span class="t-info">Referans: ${v.ref}</span>
+`).join('\n---\n');
+}
+
+// DİFFİE-HELLMAN SİMÜLASYONU
+function doDH(){
+  const out=$('t-dh-out');out.style.display='block';
+  // Küçük sayılarla eğitim amaçlı demo
+  const p=23,g=5;
+  const a=Math.floor(Math.random()*10)+2; // Alice'in gizli anahtarı
+  const b=Math.floor(Math.random()*10)+2; // Bob'un gizli anahtarı
+  const A=modpow(g,a,p); // Alice'in public key
+  const B=modpow(g,b,p); // Bob'un public key
+  const sA=modpow(B,a,p); // Alice'in hesapladığı gizli
+  const sB=modpow(A,b,p); // Bob'un hesapladığı gizli
+  out.innerHTML=`<span class="t-info">// Diffie-Hellman Anahtar Değişimi (Eğitim Demo)</span>
+<span class="t-warn">Ortak parametreler: p=${p}, g=${g} (herkese açık)</span>
+
+<span class="t-ok">Alice gizli anahtar seçti: a=${a}</span>
+<span class="t-ok">Bob gizli anahtar seçti:  b=${b}</span>
+
+<span class="t-info">--- Public key değişimi (açık kanal) ---</span>
+<span class="t-ok">Alice → Bob: A = g^a mod p = ${g}^${a} mod ${p} = ${A}</span>
+<span class="t-ok">Bob → Alice: B = g^b mod p = ${g}^${b} mod ${p} = ${B}</span>
+
+<span class="t-info">--- Gizli anahtar hesabı ---</span>
+<span class="t-ok">Alice hesaplıyor: s = B^a mod p = ${B}^${a} mod ${p} = ${sA}</span>
+<span class="t-ok">Bob hesaplıyor:  s = A^b mod p = ${A}^${b} mod ${p} = ${sB}</span>
+
+<span class="t-warn">✅ Ortak gizli anahtar: ${sA===sB?sA:'HATA'} (${sA===sB?'EŞLEŞTI':'EŞLEŞMEDİ'})</span>
+<span class="t-info">// Ağ dinleyenler p, g, A, B değerlerini bilse de</span>
+<span class="t-info">// a ve b olmadan gizli anahtarı hesaplayamazlar (Ayrık Logaritma Problemi)</span>`;
+}
+function modpow(base,exp,mod){let r=1;base%=mod;while(exp>0){if(exp&1)r=r*base%mod;exp>>=1;base=base*base%mod}return r}
+
+/* ════════════════════════════════════════
+   AES YARDIMCI FONKSİYONLAR
+   ════════════════════════════════════════ */
+async function deriveKey(password,salt){
+  const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function encryptAES(text,password){
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const key=await deriveKey(password,salt);
+  const enc=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(text));
+  const combined=new Uint8Array(salt.length+iv.length+enc.byteLength);
+  combined.set(salt);combined.set(iv,16);combined.set(new Uint8Array(enc),28);
+  return btoa(String.fromCharCode(...combined));
+}
+async function decryptAES(b64,password){
+  const combined=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+  const salt=combined.slice(0,16);const iv=combined.slice(16,28);const data=combined.slice(28);
+  const key=await deriveKey(password,salt);
+  const dec=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,data);
+  return new TextDecoder().decode(dec);
+}
+
+/* ════════════════════════════════════════
+   FORUM
+   ════════════════════════════════════════ */
+function defaultForum(){return[
+  {id:1,author:'0xVoid_42',emoji:'⚡',tag:'Kaynak',text:'White Web\'e hoş geldiniz! OSINT için tavsiye: Shodan.io, Maltego, TheHarvester. Hepsi etik ve yasal test için.',likes:18,liked:false,time:'1 saat önce'},
+  {id:2,author:'NullPtr_7',emoji:'🔭',tag:'Düşünce',text:'Kuantum bilgisayarlar RSA şifrelemesini kırabilir mi? NIST\'in post-kuantum kriptografi standartları bu konuda kritik.',likes:11,liked:false,time:'3 saat önce'},
+  {id:3,author:'KuantumKurt',emoji:'⚛️',tag:'Soru',text:'Nükleer fisyon ve füzyon arasındaki pratik enerji farkını anlamak için hangi kaynakları önerirsiniz?',likes:7,liked:false,time:'5 saat önce'},
+  {id:4,author:'SiberBilge',emoji:'🛡️',tag:'CTF',text:'HTB\'de yeni bir makine çıktı. SQL injection + privilege escalation kombinasyonu. Spoiler vermeden: buffer overflow bilmek işe yarar.',likes:9,liked:false,time:'6 saat önce'},
+];}
+function renderForum(){
+  const c=$('forum-list');
+  if(!S.forum.length){c.innerHTML='<div class="empty"><div class="ei">💬</div>Henüz mesaj yok.</div>';return}
+  c.innerHTML=[...S.forum].reverse().map(m=>`
+    <div class="forum-msg">
+      <div class="forum-msg-hdr">
+        <div class="f-avatar">${m.emoji}</div>
+        <span class="f-name">${esc(m.author)}</span>
+        <span class="f-tag ${m.tag==='CTF'?'ctf':m.tag==='Kaynak'?'resource':m.tag==='Araç'?'exploit':''}">${m.tag}</span>
+        <span class="f-time">${m.time}</span>
+      </div>
+      <div class="f-body">${esc(m.text)}</div>
+      <div class="f-actions">
+        <button class="like-btn ${m.liked?'liked':''}" onclick="likeMsg(${m.id})">❤ ${m.likes}</button>
+        <button class="like-btn" onclick="addToFav('forum','${esc(m.text.substring(0,60))}...')">⭐ Favorile</button>
+      </div>
+    </div>
+  `).join('');
+}
+function postForum(){
+  const txt=$('f-input').value.trim();
+  if(txt.length<5){toast('Çok kısa!','err');return}
+  const name=S.profile?S.profile.name:'Ghost_'+Math.floor(Math.random()*9999);
+  const emoji=S.profile?S.profile.emoji:'👤';
+  S.forum.push({id:Date.now(),author:name,emoji,tag:$('f-tag').value,text:txt,likes:0,liked:false,time:'az önce'});
+  ls('forum',S.forum);$('f-input').value='';
+  renderForum();toast('Mesaj gönderildi 🚀','ok');
+}
+function likeMsg(id){
+  const m=S.forum.find(x=>x.id===id);if(!m)return;
+  m.liked=!m.liked;m.likes+=m.liked?1:-1;
+  ls('forum',S.forum);renderForum();
+}
+
+/* ════════════════════════════════════════
+   ŞİFRELİ NOTLAR
+   ════════════════════════════════════════ */
+async function saveNote(){
+  const title=($('n-title').value.trim()||'Adsız Not');
+  const body=$('n-body').value.trim();const pass=$('n-pass').value;
+  if(!body){toast('Not boş!','err');return}
+  let content=body,encrypted=false;
+  if(pass){try{content=await encryptAES(body,pass);encrypted=true}catch{}}
+  S.notes.push({id:Date.now(),title,content,encrypted,date:new Date().toLocaleDateString('tr-TR')});
+  ls('notes',S.notes);clearNoteForm();renderNotes();
+  checkBadges();renderProfile();
+  toast(encrypted?'🔐 Şifreli kaydedildi':'💾 Kaydedildi','ok');
+}
+async function encShow(){
+  const txt=$('n-body').value.trim();const pass=$('n-pass').value;
+  if(!txt||!pass){toast('Metin ve şifre gerekli!','err');return}
+  try{
+    const enc=await encryptAES(txt,pass);
+    const out=$('enc-out');out.style.display='block';
+    out.innerHTML=`<span class="t-info">// AES-GCM Şifreli — kopyala ve güvenli bir yerde sakla</span>\n<span class="t-ok">${enc}</span>`;
+    toast('🔒 Şifrelendi!','ok');
+  }catch(e){toast('Şifreleme hatası!','err')}
+}
+async function doDecrypt(){
+  const b64=$('dec-in').value.trim();const pass=$('dec-pass').value;
+  if(!b64||!pass){toast('Şifreli metin ve şifre gerekli!','err');return}
+  try{
+    const dec=await decryptAES(b64,pass);
+    const out=$('dec-out');out.style.display='block';
+    out.innerHTML=`<span class="t-info">// Deşifre edildi</span>\n<span class="t-ok">${esc(dec)}</span>`;
+    toast('🔓 Deşifre başarılı!','ok');
+  }catch{toast('❌ Yanlış şifre!','err')}
+}
+function clearNoteForm(){
+  ['n-title','n-body','n-pass'].forEach(id=>$(id).value='');
+  $('enc-out').style.display='none';
+}
+function deleteNote(id){
+  S.notes=S.notes.filter(n=>n.id!==id);
+  ls('notes',S.notes);renderNotes();toast('Not silindi','inf');
+}
+function renderNotes(){
+  $('notes-cnt').textContent=`(${S.notes.length})`;
+  const l=$('notes-list');
+  if(!S.notes.length){l.innerHTML='<div class="empty"><div class="ei">📝</div>Not yok.</div>';return}
+  l.innerHTML=[...S.notes].reverse().map(n=>`
+    <div class="note-item">
+      <div style="font-size:16px">${n.encrypted?'🔐':'📄'}</div>
+      <div style="flex:1">
+        <div class="note-nm">${esc(n.title)}</div>
+        <div class="note-meta">${n.date} · ${n.encrypted?'Şifreli':'Düz metin'}</div>
+      </div>
+      <button class="btn btn-warn btn-sm" onclick="deleteNote(${n.id})">🗑️</button>
+    </div>
+  `).join('');
+}
+
+/* ════════════════════════════════════════
+   DOSYALAR
+   ════════════════════════════════════════ */
+function handleDrop(e){
+  e.preventDefault();
+  const f=e.dataTransfer.files[0];if(f)processFile(f);
+}
+function handleFileSel(e){const f=e.target.files[0];if(f)processFile(f)}
+function processFile(file){
+  if(file.size>10*1024*1024){toast('Max 10MB!','err');return}
+  const r=new FileReader();
+  r.onload=e=>{
+    S.files.push({id:Date.now(),name:file.name,size:fmtBytes(file.size),data:e.target.result,
+      by:S.profile?S.profile.name:'Anonim',date:new Date().toLocaleDateString('tr-TR')});
+    ls('files',S.files);renderFiles();checkBadges();renderProfile();
+    toast('📁 '+file.name+' yüklendi!','ok');
+  };
+  r.readAsDataURL(file);
+}
+function deleteFile(id){S.files=S.files.filter(f=>f.id!==id);ls('files',S.files);renderFiles();toast('Dosya silindi','inf')}
+function renderFiles(){
+  const l=$('files-list');
+  if(!S.files.length){l.innerHTML='<div class="empty"><div class="ei">📂</div>Dosya yok.</div>';return}
+  const icons={pdf:'📄',docx:'📝',doc:'📝',txt:'📃',md:'📃',png:'🖼️',jpg:'🖼️',jpeg:'🖼️'};
+  l.innerHTML=[...S.files].reverse().map(f=>{
+    const ext=f.name.split('.').pop().toLowerCase();
+    return`<div class="file-item">
+      <div style="font-size:22px">${icons[ext]||'📁'}</div>
+      <div style="flex:1;min-width:0">
+        <div class="file-nm">${esc(f.name)}</div>
+        <div class="file-meta">${f.size} · ${f.date} · ${f.by}</div>
+      </div>
+      <div class="row" style="gap:5px">
+        <a href="${f.data}" download="${f.name}" class="btn btn-sm">⬇️</a>
+        <button class="btn btn-sm" onclick="addToFav('file','${esc(f.name)}')">⭐</button>
+        <button class="btn btn-warn btn-sm" onclick="deleteFile(${f.id})">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════
+   FAVORİLER
+   ════════════════════════════════════════ */
+function addToFav(type,title){
+  if(S.favs.some(f=>f.title===title)){toast('Zaten favorilerde!','inf');return}
+  const icons={lesson:'📚',field:'🗂️',forum:'💬',file:'📁',tool:'⚙️'};
+  S.favs.push({id:Date.now(),type,title,icon:icons[type]||'⭐'});
+  ls('favs',S.favs);renderFavs();checkBadges();renderProfile();
+  toast('⭐ Favorilere eklendi!','ok');
+}
+function rmFav(id){S.favs=S.favs.filter(f=>f.id!==id);ls('favs',S.favs);renderFavs()}
+function renderFavs(){
+  const l=$('fav-list');
+  if(!S.favs.length){l.innerHTML='<div class="empty"><div class="ei">⭐</div>Favori yok.</div>';return}
+  l.innerHTML=[...S.favs].reverse().map(f=>`
+    <div class="fav-item">
+      <div style="font-size:18px">${f.icon}</div>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:700">${esc(f.title)}</div>
+        <div style="font-size:10px;color:var(--text3)">${f.type}</div>
+      </div>
+      <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px" onclick="rmFav(${f.id})">✕</button>
+    </div>
+  `).join('');
+}
+
+/* ════════════════════════════════════════
+   İLERLEME
+   ════════════════════════════════════════ */
+function renderProgress(){
+  renderHero();
+  const totalT=FIELDS.reduce((a,f)=>a+f.topics.length,0);
+  const doneT=Object.values(S.progress).reduce((a,f)=>a+Object.values(f).filter(Boolean).length,0);
+  $('stats-grid').innerHTML=`
+    <div class="stat-box"><div class="stat-n">${doneT}</div><div class="stat-l">Tamamlanan</div></div>
+    <div class="stat-box"><div class="stat-n">${totalT}</div><div class="stat-l">Toplam Konu</div></div>
+    <div class="stat-box"><div class="stat-n">${S.favs.length}</div><div class="stat-l">Favori</div></div>
+    <div class="stat-box"><div class="stat-n">${S.notes.length}</div><div class="stat-l">Not</div></div>
+    <div class="stat-box"><div class="stat-n">${S.files.length}</div><div class="stat-l">Dosya</div></div>
+    <div class="stat-box"><div class="stat-n">${S.forum.length}</div><div class="stat-l">Forum Msg</div></div>
+    <div class="stat-box"><div class="stat-n">${FIELDS.length}</div><div class="stat-l">Alan</div></div>
+    <div class="stat-box"><div class="stat-n">${TOOLS.length}</div><div class="stat-l">Araç</div></div>
+  `;
+  $('prog-list').innerHTML=FIELDS.map(f=>{
+    const prog=S.progress[f.id]||{};
+    const done=Object.values(prog).filter(Boolean).length;
+    const pct=Math.round(done/f.topics.length*100);
+    return`<div class="prog-row">
+      <div class="prog-info">
+        <span class="prog-name">${f.icon} ${f.name}</span>
+        <span class="prog-pct">${done}/${f.topics.length} · %${pct}</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+function resetAllProg(){
+  if(!confirm('Tüm ilerleme silinsin mi?'))return;
+  S.progress={};ls('progress',S.progress);
+  renderProgress();renderFields();toast('↺ Tüm ilerleme sıfırlandı','inf');
+}
+
+/* ════════════════════════════════════════
+   ETİK TÜZÜK SAYFASI
+   ════════════════════════════════════════ */
+function renderEthicsPage(){
+  $('ethics-body').innerHTML=`
+    <div style="background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.15);border-radius:var(--r);padding:20px;margin-bottom:20px">
+      <div style="font-family:var(--font-head);font-size:13px;letter-spacing:2px;color:var(--g1);margin-bottom:10px">// WHITE WEB ETİK TÜZÜĞÜ</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.9">
+        White Web, dark web'in karanlık kültüründen tamamen farklı bir felsefe üzerine kurulmuştur.<br/>
+        Burada güç, zarar vermek için değil — <strong style="color:var(--g1)">anlamak, korumak ve paylaşmak</strong> için kullanılır.<br/>
+        Bu platform anonim olabilirsin ama sorumsuz olamazsın.
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:24px">
+      ${ETHICS_CODE.map((e,i)=>`
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px;transition:border-color var(--tr)">
+          <div style="font-size:26px;margin-bottom:8px">${e.icon}</div>
+          <div style="font-family:var(--font-head);font-size:11px;letter-spacing:1px;color:var(--g1);margin-bottom:8px">${String(i+1).padStart(2,'0')}. ${e.title}</div>
+          <div style="font-size:12px;color:var(--text3);line-height:1.7">${e.text}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="card">
+      <div class="card-title">GÜNÜN ETİK SÖZÜ</div>
+      <div id="ethics-quote-box" style="font-size:13px;color:var(--text2);font-style:italic;padding:10px 0;cursor:pointer;line-height:1.9" onclick="nextQuote()">
+        ${QUOTES[S.quoteIdx].t}<br/><span style="font-size:11px;color:var(--text3);font-style:normal">— ${QUOTES[S.quoteIdx].a}</span>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:8px">↺ Tıklayarak yeni söz al</div>
+    </div>
+    <div class="card">
+      <div class="card-title">DARK WEB vs WHITE WEB</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <tr style="border-bottom:1px solid var(--border)">
+          <th style="padding:10px;text-align:left;color:var(--text3)">Özellik</th>
+          <th style="padding:10px;text-align:center;color:var(--g3)">Dark Web</th>
+          <th style="padding:10px;text-align:center;color:var(--g1)">White Web</th>
+        </tr>
+        ${[
+          ['Amaç','Gizli &amp; yasadışı aktivite','Etik, yasal, eğitici'],
+          ['Kimlik','Tam anonimlik (sorumsuz)','Anonim ama sorumlu'],
+          ['Araçlar','Zarar vermek için','Savunma &amp; öğrenmek için'],
+          ['Topluluk','Suç odaklı','Bilim &amp; etik odaklı'],
+          ['İçerik','Yasadışı &amp; zararlı','Açık kaynak &amp; eğitim'],
+          ['Hukuk','Yasaları çiğner','Yasaları destekler'],
+        ].map(([f,d,w])=>`<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:9px;color:var(--text2)">${f}</td>
+          <td style="padding:9px;text-align:center;color:var(--g3)">${d}</td>
+          <td style="padding:9px;text-align:center;color:var(--g1)">${w}</td>
+        </tr>`).join('')}
+      </table>
+    </div>
+  `;
+}
+function nextQuote(){
+  S.quoteIdx=(S.quoteIdx+1)%QUOTES.length;
+  const q=QUOTES[S.quoteIdx];
+  const box=$('ethics-quote-box');
+  if(box)box.innerHTML=`${q.t}<br/><span style="font-size:11px;color:var(--text3);font-style:normal">— ${q.a}</span>`;
+}
+
+/* ════════════════════════════════════════
+   BAŞLAT!
+   ════════════════════════════════════════ */
+window.addEventListener('load',init);
+</script>
+</body>
+</html>
